@@ -229,48 +229,63 @@ function displayPosts(posts = null, containerId = 'posts') {
         container.innerHTML = postsToShow.map((post, index) => {
             const score = (post.upvotes || 0) - (post.downvotes || 0);
             const comments = getAllComments().filter(c => c.postId === post.id && !c.parentId);
+            const categoryText = post.category ? `r/${post.category}` : 'r/RoseFórum';
             
             return `
-            <article class="post" data-post-id="${post.id}" onclick="viewPost('${post.id}')" style="animation-delay: ${index * 0.1}s">
-                <div class="post-header">
-                    <h3 class="post-title">${post.title}</h3>
-                    <span class="post-category category-${post.category}">${post.category}</span>
-                </div>
-                <div class="post-excerpt">
-                    <p>${post.content.substring(0, 150)}${post.content.length > 150 ? '...' : ''}</p>
-                </div>
-                <div class="post-meta">
-                    <span class="post-date" title="${new Date(post.date).toLocaleString('pt-BR')}">
-                        📅 ${formatDate(post.date)}
-                    </span>
-                    <span class="post-author">� ${post.author || 'Anônimo'}</span>
-                    <span class="post-views">👁️ ${post.views || 0}</span>
-                </div>
-                ${post.tags.length > 0 ? `
-                    <div class="post-tags">
-                        ${post.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+            <article class="reddit-post" data-post-id="${post.id}" style="animation-delay: ${index * 0.05}s">
+                <div class="reddit-post-header">
+                    <div class="subreddit-info">
+                        <div class="subreddit-icon">🌹</div>
+                        <div>
+                            <span class="subreddit-name">${categoryText}</span>
+                            <span class="post-meta-info">
+                                Postado por u/${post.author || 'anonymous'} • ${formatDate(post.date)}
+                            </span>
+                        </div>
                     </div>
-                ` : ''}
-                <div class="post-votes">
-                    <button class="post-vote-btn post-upvote ${post.userVote === 'up' ? 'upvoted' : ''}" 
-                            onclick="event.stopPropagation(); votePost('${post.id}', 'up')">
-                        👍
-                    </button>
-                    <span class="post-score">${score}</span>
-                    <button class="post-vote-btn post-downvote ${post.userVote === 'down' ? 'downvoted' : ''}" 
-                            onclick="event.stopPropagation(); votePost('${post.id}', 'down')">
-                        👎
-                    </button>
                 </div>
-                <div class="engagement-bar">
-                    <div class="engagement-item">
-                        💬 ${comments.length} comentários
+                
+                <div class="reddit-post-content">
+                    <div class="reddit-vote-column">
+                        <button class="reddit-vote-btn ${post.userVote === 'up' ? 'upvoted' : ''}" 
+                                onclick="event.stopPropagation(); votePost('${post.id}', 'up')">
+                            ▲
+                        </button>
+                        <span class="reddit-score karma-display ${score >= 0 ? 'karma-positive' : 'karma-negative'}">${score}</span>
+                        <button class="reddit-vote-btn ${post.userVote === 'down' ? 'downvoted' : ''}" 
+                                onclick="event.stopPropagation(); votePost('${post.id}', 'down')">
+                            ▼
+                        </button>
                     </div>
-                    <div class="engagement-item">
-                        ❤️ ${post.likes || 0} curtidas
-                    </div>
-                    <div class="engagement-item">
-                        🔗 Compartilhar
+                    
+                    <div class="reddit-post-body">
+                        <h3 class="reddit-post-title" onclick="viewPost('${post.id}')">
+                            ${post.title}
+                        </h3>
+                        
+                        ${post.content.length > 200 ? `
+                            <div class="reddit-post-text">
+                                ${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}
+                            </div>
+                        ` : ''}
+                        
+                        ${post.tags.length > 0 ? `
+                            <div class="post-tags">
+                                ${post.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="reddit-post-actions">
+                            <button class="reddit-action-btn" onclick="viewPost('${post.id}')">
+                                💬 ${comments.length} Comentários
+                            </button>
+                            <button class="reddit-action-btn" onclick="sharePost('${post.id}')">
+                                🔗 Compartilhar
+                            </button>
+                            <button class="reddit-action-btn" onclick="savePost('${post.id}')">
+                                📁 Salvar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </article>
