@@ -647,4 +647,3 @@ window.RoseForum = {
     updatePost,
     deletePostById
 };
-
