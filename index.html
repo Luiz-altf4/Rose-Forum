@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Rose Fórum - Comunidade estilo Reddit">
+    <meta name="description" content="Roxe - Comunidade estilo Reddit">
     <meta name="keywords" content="fórum, comunidade, discussão, posts, reddit">
-    <title>r/RoseFórum - A Melhor Comunidade</title>
+    <title>r/Roxe - A Melhor Comunidade</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌹</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚫</text></svg>">
 </head>
 <body>
     <!-- Reddit-Style Header -->
@@ -19,14 +19,14 @@
             <div class="nav-left">
                 <div class="hamburger-menu" onclick="toggleSidebar()">☰</div>
                 <div class="logo-container">
-                    <span class="logo">🌹</span>
-                    <span class="logo-text">RoseFórum</span>
+                    <span class="logo">⚫</span>
+                    <span class="logo-text">Roxe</span>
                 </div>
             </div>
             
             <div class="nav-center">
                 <div class="search-bar">
-                    <input type="text" placeholder="Search r/RoseFórum" id="redditSearch">
+                    <input type="text" placeholder="Search r/Roxe" id="redditSearch">
                     <button onclick="searchPosts()">🔍</button>
                 </div>
             </div>
@@ -40,6 +40,8 @@
                     </div>
                     <div class="user-menu-dropdown" id="userMenuDropdown">
                         <button class="user-menu-item" onclick="openProfile()">👤 Meu Perfil</button>
+                        <button class="user-menu-item" onclick="openChatModal()">💬 Bate-Papo</button>
+                        <button class="user-menu-item" onclick="openFriendsModal()">👥 Amigos</button>
                         <button class="user-menu-item" onclick="openSettings()">⚙️ Configurações</button>
                         <button class="user-menu-item" onclick="toggleTheme()">🌙 Tema</button>
                         <button class="user-menu-item" onclick="logout()">🚪 Sair</button>
@@ -88,9 +90,9 @@
             <!-- Community Card -->
             <div class="community-card">
                 <div class="community-header">
-                    <div class="community-avatar">🌹</div>
+                    <div class="community-avatar">⚫</div>
                     <div class="community-info">
-                        <h3>r/RoseFórum</h3>
+                        <h3>r/Roxe</h3>
                         <p>Uma comunidade para compartilhar ideias</p>
                     </div>
                 </div>
@@ -129,12 +131,23 @@
                 
                 <div class="view-options">
                     <select id="categoryFilter" onchange="filterPosts()">
-                        <option value="">r/RoseFórum</option>
+                        <option value="">r/Roxe</option>
                         <option value="tecnologia">r/tecnologia</option>
                         <option value="design">r/design</option>
                         <option value="programacao">r/programacao</option>
                         <option value="negocios">r/negocios</option>
                         <option value="pessoal">r/pessoal</option>
+                        <option value="jogos">r/jogos</option>
+                        <option value="noticias">r/noticias</option>
+                        <option value="memes">r/memes</option>
+                        <option value="ajuda">r/ajuda</option>
+                        <option value="debate">r/debate</option>
+                        <option value="offtopic">r/offtopic</option>
+                        <option value="arte">r/arte</option>
+                        <option value="musica">r/musica</option>
+                        <option value="filmes">r/filmes</option>
+                        <option value="livros">r/livros</option>
+                        <option value="viagens">r/viagens</option>
                     </select>
                 </div>
             </div>
@@ -200,12 +213,23 @@
                     <div class="form-group">
                         <label for="quickCategory" class="form-label">Comunidade</label>
                         <select id="quickCategory" class="form-select">
-                            <option value="">r/RoseFórum</option>
+                            <option value="">r/Roxe</option>
                             <option value="tecnologia">r/tecnologia</option>
                             <option value="design">r/design</option>
                             <option value="programacao">r/programacao</option>
                             <option value="negocios">r/negocios</option>
                             <option value="pessoal">r/pessoal</option>
+                            <option value="jogos">r/jogos</option>
+                            <option value="noticias">r/noticias</option>
+                            <option value="memes">r/memes</option>
+                            <option value="ajuda">r/ajuda</option>
+                            <option value="debate">r/debate</option>
+                            <option value="offtopic">r/offtopic</option>
+                            <option value="arte">r/arte</option>
+                            <option value="musica">r/musica</option>
+                            <option value="filmes">r/filmes</option>
+                            <option value="livros">r/livros</option>
+                            <option value="viagens">r/viagens</option>
                         </select>
                     </div>
                     
@@ -265,6 +289,62 @@
                 <button class="btn btn-outline" onclick="closeViewer()">
                     Fechar
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Friends Modal -->
+    <div id="friendsModal" class="modal" style="display: none;">
+        <div class="modal-content friends-modal">
+            <div class="modal-header">
+                <h3>👥 Amigos</h3>
+                <button class="modal-close" onclick="closeFriendsModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="friends-container">
+                    <div class="friends-section">
+                        <h4>Adicionar Amigo</h4>
+                        <div class="add-friend-form">
+                            <input type="text" id="friendUsername" placeholder="Nome de usuário...">
+                            <button onclick="addFriend()">Adicionar</button>
+                        </div>
+                    </div>
+                    
+                    <div class="friends-section">
+                        <h4>Lista de Amigos</h4>
+                        <div class="friends-list" id="friendsList">
+                            <!-- Friends will be added here -->
+                        </div>
+                    </div>
+                    
+                    <div class="friends-section">
+                        <h4>Solicitações Pendentes</h4>
+                        <div class="friend-requests" id="friendRequests">
+                            <!-- Requests will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="modal" style="display: none;">
+        <div class="modal-content chat-modal">
+            <div class="modal-header">
+                <h3>💬 Bate-Papo</h3>
+                <button class="modal-close" onclick="closeChatModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will be added here -->
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter') sendMessage()">
+                        <button onclick="sendMessage()">Enviar</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
