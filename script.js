@@ -127,54 +127,86 @@ function deletePostById(postId) {
     return false;
 }
 
-// UI Functions
+// Display Functions
 function displayPosts(posts = null, containerId = 'posts') {
     const postsToShow = posts || getAllPosts();
     const container = document.getElementById(containerId);
     
     if (!container) return;
     
-    // Hide loading state
-    const loadingElement = document.getElementById('loadingPosts');
-    if (loadingElement) loadingElement.style.display = 'none';
+    // Show loading state
+    container.innerHTML = `
+        <div class="loading-state" id="loadingPosts">
+            <div class="loading-spinner"></div>
+            <p>Carregando posts...</p>
+        </div>
+    `;
     
-    // Show empty state if no posts
-    const emptyElement = document.getElementById('emptyPosts');
-    if (emptyElement) {
-        emptyElement.style.display = postsToShow.length === 0 ? 'block' : 'none';
-    }
-    
-    if (postsToShow.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-    
-    container.innerHTML = postsToShow.map((post, index) => `
-        <article class="post" data-post-id="${post.id}" onclick="viewPost('${post.id}')">
-            <div class="post-header">
-                <h3 class="post-title">${post.title}</h3>
-                <span class="post-category category-${post.category}">${post.category}</span>
-            </div>
-            <div class="post-excerpt">
-                <p>${post.content.substring(0, 150)}${post.content.length > 150 ? '...' : ''}</p>
-            </div>
-            <div class="post-meta">
-                <span class="post-date" title="${new Date(post.date).toLocaleString('pt-BR')}">
-                    📅 ${formatDate(post.date)}
-                </span>
-                <span class="post-views">👁️ ${post.views || 0}</span>
-                <span class="post-likes">❤️ ${post.likes || 0}</span>
-            </div>
-            ${post.tags.length > 0 ? `
-                <div class="post-tags">
-                    ${post.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+    // Simulate loading delay for better UX
+    setTimeout(() => {
+        // Hide loading state
+        const loadingElement = document.getElementById('loadingPosts');
+        if (loadingElement) loadingElement.style.display = 'none';
+        
+        // Show empty state if no posts
+        const emptyElement = document.getElementById('emptyPosts');
+        if (emptyElement) {
+            emptyElement.style.display = postsToShow.length === 0 ? 'block' : 'none';
+        }
+        
+        if (postsToShow.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state" id="emptyPosts">
+                    <div class="empty-icon">📝</div>
+                    <h3>Nenhum post encontrado</h3>
+                    <p>Seja o primeiro a compartilhar algo com a comunidade!</p>
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        Criar Primeiro Post
+                    </button>
                 </div>
-            ` : ''}
-        </article>
-    `).join('');
-    
-    // Update stats
-    updateStats();
+            `;
+            return;
+        }
+        
+        container.innerHTML = postsToShow.map((post, index) => `
+            <article class="post" data-post-id="${post.id}" onclick="viewPost('${post.id}')" style="animation-delay: ${index * 0.1}s">
+                <div class="post-header">
+                    <h3 class="post-title">${post.title}</h3>
+                    <span class="post-category category-${post.category}">${post.category}</span>
+                </div>
+                <div class="post-excerpt">
+                    <p>${post.content.substring(0, 150)}${post.content.length > 150 ? '...' : ''}</p>
+                </div>
+                <div class="post-meta">
+                    <span class="post-date" title="${new Date(post.date).toLocaleString('pt-BR')}">
+                        📅 ${formatDate(post.date)}
+                    </span>
+                    <span class="post-views">👁️ ${post.views || 0}</span>
+                    <span class="post-likes">❤️ ${post.likes || 0}</span>
+                </div>
+                ${post.tags.length > 0 ? `
+                    <div class="post-tags">
+                        ${post.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                    </div>
+                ` : ''}
+            </article>
+        `).join('');
+        
+        // Update stats
+        updateStats();
+        
+        // Add entrance animations
+        const postsElements = container.querySelectorAll('.post');
+        postsElements.forEach((post, index) => {
+            post.style.opacity = '0';
+            post.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                post.style.transition = 'all 0.6s ease-out';
+                post.style.opacity = '1';
+                post.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }, 500);
 }
 
 function viewPost(postId) {
@@ -379,13 +411,106 @@ function showError(elementId, message) {
 }
 
 function showToast(message, type = 'info') {
-    // This function should be implemented in the HTML file
-    // but we'll provide a fallback
-    console.log(`[${type.toUpperCase()}] ${message}`);
+    // Remove existing toast
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
     
-    const toastElement = document.getElementById('toast');
-    if (toastElement && typeof window.showToast === 'function') {
-        window.showToast(message, type);
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+        </div>
+    `;
+    
+    // Add to page
+    document.body.appendChild(toast);
+    
+    // Show with animation
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Like Post Function
+function likePost(postId) {
+    const posts = getAllPosts();
+    const post = posts.find(p => p.id === postId);
+    
+    if (post) {
+        post.likes = (post.likes || 0) + 1;
+        updatePost(postId, { likes: post.likes });
+        showToast('Post curtido! ❤️', 'success');
+        
+        // Update like button if exists
+        const likeBtn = document.querySelector(`[data-post-id="${postId}"] .post-likes`);
+        if (likeBtn) {
+            likeBtn.innerHTML = `❤️ ${post.likes}`;
+        }
+    }
+}
+
+// Share Post Function
+function sharePost(postId) {
+    const posts = getAllPosts();
+    const post = posts.find(p => p.id === postId);
+    
+    if (post) {
+        const shareUrl = `${window.location.origin}#post-${postId}`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: post.title,
+                text: post.content.substring(0, 100) + '...',
+                url: shareUrl
+            });
+        } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(shareUrl);
+            showToast('Link copiado para a área de transferência!', 'success');
+        }
+    }
+}
+
+// Theme Toggle
+function toggleTheme() {
+    const body = document.body;
+    const currentTheme = body.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    // Update theme button icon
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    }
+    
+    showToast(`Tema ${newTheme === 'dark' ? 'escuro' : 'claro'} ativado!`, 'info');
+}
+
+// Load saved theme
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+    
+    // Update theme button icon
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
     }
 }
 
@@ -483,6 +608,7 @@ function sortPosts() {
 
 // Initialization
 function initializeApp() {
+    loadTheme();
     loadPosts();
     updateStats();
     
