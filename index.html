@@ -366,7 +366,36 @@
     <button class="back-to-top" onclick="scrollToTop()" title="Voltar ao topo">↑</button>
     
     <script src="script.js"></script>
+<script src="demo.js"></script>
     <script>
+        // Inicialização quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Roxe Forum carregando...');
+            
+            // Carregar tema
+            loadTheme();
+            updateThemeIcon();
+            
+            // Carregar posts
+            loadPosts();
+            updateStats();
+            updateProfileDisplay();
+            updateCommunityStats();
+            
+            // Mostrar posts existentes ou estado vazio
+            setTimeout(() => {
+                const posts = getAllPosts();
+                if (posts.length === 0) {
+                    document.getElementById('emptyPosts').style.display = 'block';
+                    document.getElementById('loadingPosts').style.display = 'none';
+                } else {
+                    displayPosts(posts);
+                }
+            }, 500);
+            
+            console.log('Roxe Forum inicializado!');
+        });
+        
         // Reddit-style functionality
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -400,128 +429,38 @@
             showToast('Bem-vindo à comunidade! 🎉', 'success');
         }
 
-        // Update user profile display
-        function updateProfileDisplay() {
-            const user = getCurrentUser();
-            
-            // Update profile info
-            document.getElementById('profileName').textContent = user.name;
-            document.getElementById('profileUsername').textContent = '@' + user.name.toLowerCase().replace(/\s+/g, '');
-            document.getElementById('userAvatarSmall').textContent = user.name.charAt(0).toUpperCase();
-            document.getElementById('profileAvatar').textContent = user.name.charAt(0).toUpperCase();
-            
-            // Calculate user stats
-            const posts = getAllPosts().filter(p => p.author === user.name);
-            const comments = getAllComments().filter(c => c.author === user.name);
-            
-            let totalKarma = 0;
-            posts.forEach(post => {
-                totalKarma += (post.upvotes || 0) - (post.downvotes || 0);
-            });
-            comments.forEach(comment => {
-                totalKarma += (comment.upvotes || 0) - (comment.downvotes || 0);
-            });
-            
-            document.getElementById('userPosts').textContent = posts.length;
-            document.getElementById('userComments').textContent = comments.length;
-            document.getElementById('userKarmaDisplay').textContent = totalKarma;
-            document.getElementById('userKarma').textContent = totalKarma + ' karma';
-            
-            // Add badges based on karma
-            const badgesContainer = document.getElementById('userBadges');
-            badgesContainer.innerHTML = '';
-            
-            if (totalKarma >= 1000) {
-                badgesContainer.innerHTML += '<span class="badge badge-gold">🏆 Gold</span>';
-            } else if (totalKarma >= 500) {
-                badgesContainer.innerHTML += '<span class="badge badge-silver">🥈 Silver</span>';
-            } else if (totalKarma >= 100) {
-                badgesContainer.innerHTML += '<span class="badge badge-bronze">🥉 Bronze</span>';
-            }
-            
-            if (posts.length >= 10) {
-                badgesContainer.innerHTML += '<span class="badge">📝 Postador</span>';
-            }
-            
-            if (comments.length >= 20) {
-                badgesContainer.innerHTML += '<span class="badge">💬 Comentador</span>';
-            }
-        }
-
-        // Update community stats
-        function updateCommunityStats() {
-            const posts = getAllPosts();
-            const users = new Set(posts.map(p => p.author));
-            
-            document.getElementById('communityMembers').textContent = users.size + 1; // +1 for current user
-            document.getElementById('communityPosts').textContent = posts.length;
-        }
-
-        // Character counting for create form
-        document.getElementById('quickTitle')?.addEventListener('input', function() {
-            document.getElementById('titleCount').textContent = this.value.length;
-        });
-
-        document.getElementById('quickContent')?.addEventListener('input', function() {
-            document.getElementById('contentCount').textContent = this.value.length;
-        });
-
-        // Sort posts with Reddit-style options
-        function sortPosts(sortType) {
-            // Update active button
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            const posts = getAllPosts();
-            let sorted = [...posts];
-            
-            switch(sortType) {
-                case 'hot':
-                    // Sort by score and recent activity
-                    sorted.sort((a, b) => {
-                        const scoreA = (a.upvotes || 0) - (a.downvotes || 0);
-                        const scoreB = (b.upvotes || 0) - (b.downvotes || 0);
-                        return scoreB - scoreA;
-                    });
-                    break;
-                case 'new':
-                    sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    break;
-                case 'top':
-                    // Sort by total score
-                    sorted.sort((a, b) => {
-                        const scoreA = (a.upvotes || 0) - (a.downvotes || 0);
-                        const scoreB = (b.upvotes || 0) - (b.downvotes || 0);
-                        return scoreB - scoreA;
-                    });
-                    break;
-                case 'rising':
-                    // Sort by upvote velocity (simplified)
-                    sorted.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
-                    break;
-            }
-            
-            displayPosts(sorted);
-        }
-
-        // Close dropdowns when clicking outside
+        // Fechar dropdowns ao clicar fora
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.user-menu')) {
                 document.getElementById('userMenuDropdown').classList.remove('show');
             }
         });
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadTheme();
-            updateThemeIcon();
-            loadPosts();
-            updateStats();
-            updateProfileDisplay();
-            updateCommunityStats();
-        });
+        // Função toast para notificações
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            if (toast && toastMessage) {
+                toastMessage.textContent = message;
+                toast.className = `toast toast-${type}`;
+                toast.style.display = 'block';
+                
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 3000);
+            } else {
+                // Fallback se toast não existir
+                alert(message);
+            }
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            if (toast) {
+                toast.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
