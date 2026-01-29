@@ -1160,11 +1160,15 @@ function renderComment(comment) {
                         <button class="btn btn-sm btn-outline" onclick="hideReplyForm('${comment.id}')">
                             Cancelar
                         </button>
-                        <button class="btn btn-sm btn-primary" onclick="addComment('${comment.postId}', this.previousElementSibling.previousElementSibling.value, '${comment.id}')">
+                        <button class="btn btn-sm btn-primary" onclick="addComment('${comment.postId}', this.parentElement.parentElement.previousElementSibling.value, '${comment.id}')">
                             Responder
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    `;
+}
 
 function showReplyForm(commentId) {
     const form = document.getElementById(`reply-form-${commentId}`);
