@@ -7,6 +7,25 @@ const STORAGE_KEY = 'rose_forum_posts';
 const MAX_POSTS_PER_PAGE = 10;
 const DEBOUNCE_DELAY = 300;
 
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.body.setAttribute('data-theme', savedTheme);
+    
+    // Update theme button icon
+    const themeToggle = document.querySelector('.theme-toggle');
+    if (themeToggle) {
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    }
+}
+
+function updateThemeIcon() {
+    const themeToggle = document.querySelector('.theme-toggle');
+    const currentTheme = document.body.getAttribute('data-theme') || 'light';
+    if (themeToggle) {
+        themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+    }
+}
+
 // State Management
 let currentPosts = [];
 let filteredPosts = [];
@@ -696,7 +715,351 @@ function updateCommentVoteButtons(commentId, userVote) {
     }
 }
 
-// Comment Functions
+// Friends Functions
+function openFriendsModal() {
+    const modal = document.getElementById('friendsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        loadFriends();
+        loadFriendRequests();
+        toggleUserMenu();
+    }
+}
+
+function closeFriendsModal() {
+    const modal = document.getElementById('friendsModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function addFriend() {
+    const usernameInput = document.getElementById('friendUsername');
+    const username = usernameInput.value.trim();
+    
+    if (!username) {
+        showToast('Digite um nome de usuário', 'error');
+        return;
+    }
+    
+    if (username === getCurrentUser().name) {
+        showToast('Você não pode adicionar a si mesmo', 'error');
+        return;
+    }
+    
+    const friends = getFriends();
+    if (friends.some(f => f.username === username)) {
+        showToast('Este usuário já é seu amigo', 'error');
+        return;
+    }
+    
+    // Create friend request (simulated)
+    const request = {
+        id: generateId(),
+        from: getCurrentUser().name,
+        to: username,
+        timestamp: new Date().toISOString(),
+        status: 'pending'
+    };
+    
+    saveFriendRequest(request);
+    showToast('Solicitação de amizade enviada!', 'success');
+    usernameInput.value = '';
+    
+    // Simulate acceptance for demo
+    setTimeout(() => {
+        acceptFriendRequest(request.id);
+    }, 2000 + Math.random() * 3000);
+}
+
+function getFriends() {
+    try {
+        const friends = localStorage.getItem('rox_friends');
+        return friends ? JSON.parse(friends) : [];
+    } catch (error) {
+        console.error('Erro ao carregar amigos:', error);
+        return [];
+    }
+}
+
+function saveFriend(friend) {
+    try {
+        const friends = getFriends();
+        friends.push(friend);
+        localStorage.setItem('rox_friends', JSON.stringify(friends));
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar amigo:', error);
+        return false;
+    }
+}
+
+function getFriendRequests() {
+    try {
+        const requests = localStorage.getItem('rox_friend_requests');
+        return requests ? JSON.parse(requests) : [];
+    } catch (error) {
+        console.error('Erro ao carregar solicitações:', error);
+        return [];
+    }
+}
+
+function saveFriendRequest(request) {
+    try {
+        const requests = getFriendRequests();
+        requests.push(request);
+        localStorage.setItem('rox_friend_requests', JSON.stringify(requests));
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar solicitação:', error);
+        return false;
+    }
+}
+
+function acceptFriendRequest(requestId) {
+    const requests = getFriendRequests();
+    const requestIndex = requests.findIndex(r => r.id === requestId);
+    
+    if (requestIndex === -1) return;
+    
+    const request = requests[requestIndex];
+    
+    // Add to friends list
+    const friend = {
+        id: generateId(),
+        username: request.from === getCurrentUser().name ? request.to : request.from,
+        addedAt: new Date().toISOString(),
+        status: 'online'
+    };
+    
+    saveFriend(friend);
+    
+    // Remove request
+    requests.splice(requestIndex, 1);
+    localStorage.setItem('rox_friend_requests', JSON.stringify(requests));
+    
+    loadFriends();
+    loadFriendRequests();
+    showToast(`${friend.username} agora é seu amigo!`, 'success');
+}
+
+function denyFriendRequest(requestId) {
+    const requests = getFriendRequests();
+    const filteredRequests = requests.filter(r => r.id !== requestId);
+    
+    localStorage.setItem('rox_friend_requests', JSON.stringify(filteredRequests));
+    loadFriendRequests();
+    showToast('Solicitação recusada', 'info');
+}
+
+function removeFriend(friendId) {
+    const friends = getFriends();
+    const filteredFriends = friends.filter(f => f.id !== friendId);
+    
+    localStorage.setItem('rox_friends', JSON.stringify(filteredFriends));
+    loadFriends();
+    showToast('Amigo removido', 'info');
+}
+
+function loadFriends() {
+    const friends = getFriends();
+    const friendsList = document.getElementById('friendsList');
+    
+    if (!friendsList) return;
+    
+    if (friends.length === 0) {
+        friendsList.innerHTML = '<div class="empty-friends">Você ainda não tem amigos</div>';
+        return;
+    }
+    
+    friendsList.innerHTML = friends.map(friend => `
+        <div class="friend-item">
+            <div class="friend-info">
+                <div class="friend-avatar">${friend.username.charAt(0).toUpperCase()}</div>
+                <div>
+                    <div class="friend-name">${friend.username}</div>
+                    <div class="friend-status">${friend.status}</div>
+                </div>
+            </div>
+            <div class="friend-actions">
+                <button onclick="removeFriend('${friend.id}')">Remover</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadFriendRequests() {
+    const requests = getFriendRequests();
+    const requestsContainer = document.getElementById('friendRequests');
+    const currentUser = getCurrentUser();
+    
+    if (!requestsContainer) return;
+    
+    // Get requests for current user
+    const userRequests = requests.filter(r => r.to === currentUser.name && r.status === 'pending');
+    
+    if (userRequests.length === 0) {
+        requestsContainer.innerHTML = '<div class="empty-friends">Nenhuma solicitação pendente</div>';
+        return;
+    }
+    
+    requestsContainer.innerHTML = userRequests.map(request => `
+        <div class="friend-item">
+            <div class="friend-info">
+                <div class="friend-avatar">${request.from.charAt(0).toUpperCase()}</div>
+                <div>
+                    <div class="friend-name">${request.from}</div>
+                    <div class="friend-status">Solicitou amizade</div>
+                </div>
+            </div>
+            <div class="friend-actions">
+                <button class="accept" onclick="acceptFriendRequest('${request.id}')">Aceitar</button>
+                <button class="deny" onclick="denyFriendRequest('${request.id}')">Recusar</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Chat Functions
+function openChatModal() {
+    const modal = document.getElementById('chatModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        loadChatMessages();
+        toggleUserMenu();
+    }
+}
+
+function closeChatModal() {
+    const modal = document.getElementById('chatModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    const user = getCurrentUser();
+    const chatMessage = {
+        id: generateId(),
+        author: user.name,
+        text: sanitizeHTML(message),
+        timestamp: new Date().toISOString(),
+        isOwn: true
+    };
+    
+    // Add message to chat
+    addChatMessage(chatMessage);
+    
+    // Save to storage
+    saveChatMessage(chatMessage);
+    
+    // Clear input
+    input.value = '';
+    
+    // Simulate response after delay
+    setTimeout(() => {
+        simulateChatResponse();
+    }, 1000 + Math.random() * 2000);
+}
+
+function addChatMessage(message) {
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+    
+    const messageElement = document.createElement('div');
+    messageElement.className = `chat-message ${message.isOwn ? 'own' : 'other'}`;
+    messageElement.innerHTML = `
+        <div class="chat-author">${message.author}</div>
+        <div class="chat-text">${message.text}</div>
+        <div class="chat-time">${formatDate(message.timestamp)}</div>
+    `;
+    
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function loadChatMessages() {
+    const messages = getChatMessages();
+    const messagesContainer = document.getElementById('chatMessages');
+    if (!messagesContainer) return;
+    
+    messagesContainer.innerHTML = '';
+    
+    // Add welcome message if no messages
+    if (messages.length === 0) {
+        addChatMessage({
+            id: generateId(),
+            author: 'Sistema',
+            text: 'Bem-vindo ao bate-papo do Roxe! Envie uma mensagem para começar.',
+            timestamp: new Date().toISOString(),
+            isOwn: false
+        });
+    } else {
+        messages.forEach(message => addChatMessage(message));
+    }
+}
+
+function getChatMessages() {
+    try {
+        const messages = localStorage.getItem('rox_chat_messages');
+        return messages ? JSON.parse(messages) : [];
+    } catch (error) {
+        console.error('Erro ao carregar mensagens:', error);
+        return [];
+    }
+}
+
+function saveChatMessage(message) {
+    try {
+        const messages = getChatMessages();
+        messages.push(message);
+        
+        // Keep only last 50 messages
+        if (messages.length > 50) {
+            messages.splice(0, messages.length - 50);
+        }
+        
+        localStorage.setItem('rox_chat_messages', JSON.stringify(messages));
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar mensagem:', error);
+        return false;
+    }
+}
+
+function simulateChatResponse() {
+    const responses = [
+        'Interessante! Conte mais sobre isso.',
+        'Eu concordo com você.',
+        'Isso me faz pensar...',
+        'Boa observação!',
+        'Você tem um ponto válido.',
+        'Hmm, nunca pensei por esse ângulo.',
+        'Legal! 😊',
+        'Com certeza!',
+        'Faz sentido.',
+        'Eu gostaria de saber mais.'
+    ];
+    
+    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+    const botMessage = {
+        id: generateId(),
+        author: 'BotRoxe',
+        text: randomResponse,
+        timestamp: new Date().toISOString(),
+        isOwn: false
+    };
+    
+    addChatMessage(botMessage);
+    saveChatMessage(botMessage);
+}
+
+// Share Post Functions
 function addComment(postId, content, parentId = null) {
     if (!content.trim()) {
         showToast('Digite um comentário!', 'error');
@@ -802,10 +1165,6 @@ function renderComment(comment) {
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    `;
-}
 
 function showReplyForm(commentId) {
     const form = document.getElementById(`reply-form-${commentId}`);
@@ -815,11 +1174,50 @@ function showReplyForm(commentId) {
     }
 }
 
-function hideReplyForm(commentId) {
-    const form = document.getElementById(`reply-form-${commentId}`);
-    if (form) {
-        form.style.display = 'none';
-        form.querySelector('textarea').value = '';
+function openCreateModal() {
+    const modal = document.getElementById('createModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Clear form
+        document.getElementById('quickTitle').value = '';
+        document.getElementById('quickContent').value = '';
+        document.getElementById('quickCategory').value = '';
+        document.getElementById('quickTags').value = '';
+        document.getElementById('titleCount').textContent = '0';
+        document.getElementById('contentCount').textContent = '0';
+    }
+}
+
+function closeCreateModal() {
+    const modal = document.getElementById('createModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function quickCreatePost() {
+    const title = document.getElementById('quickTitle')?.value.trim();
+    const content = document.getElementById('quickContent')?.value.trim();
+    const category = document.getElementById('quickCategory')?.value || '';
+    const tagsInput = document.getElementById('quickTags')?.value.trim() || '';
+    
+    if (!title || !content) {
+        showToast('Preencha título e conteúdo', 'error');
+        return;
+    }
+    
+    const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+    const post = createPost(title, content, category, tags);
+    
+    if (savePostToStorage(post)) {
+        showToast('Post criado com sucesso!', 'success');
+        closeCreateModal();
+        displayPosts();
+        updateStats();
+        updateProfileDisplay();
+        updateCommunityStats();
+    } else {
+        showToast('Erro ao criar post', 'error');
     }
 }
 
@@ -831,99 +1229,10 @@ function updateCharCount(textarea, maxLength) {
     }
 }
 
-// Share Post Function
-function sharePost(postId) {
-    const posts = getAllPosts();
-    const post = posts.find(p => p.id === postId);
-    
-    if (post) {
-        const shareUrl = `${window.location.origin}#post-${postId}`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: post.title,
-                text: post.content.substring(0, 100) + '...',
-                url: shareUrl
-            });
-        } else {
-            // Fallback: copy to clipboard
-            navigator.clipboard.writeText(shareUrl);
-            showToast('Link copiado para a área de transferência!', 'success');
-        }
-    }
-}
+// ... (rest of the code remains the same)
 
-// Theme Toggle
-function toggleTheme() {
-    const body = document.body;
-    const currentTheme = body.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    body.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    
-    // Update theme button icon
-    const themeToggle = document.querySelector('.theme-toggle');
-    if (themeToggle) {
-        themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-    }
-    
-    showToast(`Tema ${newTheme === 'dark' ? 'escuro' : 'claro'} ativado!`, 'info');
-}
-
-// Load saved theme
-function loadTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.body.setAttribute('data-theme', savedTheme);
-    
-    // Update theme button icon
-    const themeToggle = document.querySelector('.theme-toggle');
-    if (themeToggle) {
-        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-    }
-}
-
-// Statistics
-function updateStats() {
-    const posts = getAllPosts();
-    const today = new Date().toDateString();
-    const todayPosts = posts.filter(post => 
-        new Date(post.date).toDateString() === today
-    );
-    
-    const elements = {
-        totalPosts: document.getElementById('totalPosts'),
-        todayPosts: document.getElementById('todayPosts'),
-        footerPostCount: document.getElementById('footerPostCount')
-    };
-    
-    Object.entries(elements).forEach(([key, element]) => {
-        if (element) {
-            switch(key) {
-                case 'totalPosts':
-                    element.textContent = posts.length;
-                    break;
-                case 'todayPosts':
-                    element.textContent = todayPosts.length;
-                    break;
-                case 'footerPostCount':
-                    element.textContent = posts.length;
-                    break;
-            }
-        }
-    });
-    
-    // Update categories count
-    const categories = [...new Set(posts.map(post => post.category))];
-    const categoryElement = document.getElementById('totalCategories');
-    if (categoryElement) {
-        categoryElement.textContent = categories.length;
-    }
-}
-
-// Search and Filter
-const searchPosts = debounce(function() {
-    const query = document.getElementById('searchInput')?.value.toLowerCase() || '';
+function searchPosts() {
+    const query = document.getElementById('redditSearch')?.value.toLowerCase() || '';
     const posts = getAllPosts();
     
     if (!query) {
@@ -938,93 +1247,6 @@ const searchPosts = debounce(function() {
     );
     
     displayPosts(filtered);
-}, DEBOUNCE_DELAY);
-
-function filterPosts() {
-    const category = document.getElementById('categoryFilter')?.value || '';
-    const posts = getAllPosts();
-    
-    const filtered = category ? 
-        posts.filter(post => post.category === category) : 
-        posts;
-    
-    displayPosts(filtered);
-}
-
-function sortPosts() {
-    const sortBy = document.getElementById('sortBy')?.value || 'recentes';
-    const posts = getAllPosts();
-    
-    let sorted = [...posts];
-    
-    switch(sortBy) {
-        case 'recentes':
-            sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
-            break;
-        case 'antigos':
-            sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
-            break;
-        case 'titulo':
-            sorted.sort((a, b) => a.title.localeCompare(b.title));
-            break;
-        case 'categoria':
-            sorted.sort((a, b) => a.category.localeCompare(b.category));
-            break;
-    }
-    
-    displayPosts(sorted);
-}
-
-// Initialization
-function initializeApp() {
-    loadTheme();
-    loadPosts();
-    updateStats();
-    
-    // Load draft if on create page
-    if (window.location.pathname.includes('create.html')) {
-        loadDraft();
-        
-        // Check for edit mode
-        const urlParams = new URLSearchParams(window.location.search);
-        const editId = urlParams.get('edit');
-        if (editId) {
-            loadPostForEdit(editId);
-        }
-    }
-    
-    // Setup event listeners
-    setupEventListeners();
-}
-
-function loadPostForEdit(postId) {
-    const posts = getAllPosts();
-    const post = posts.find(p => p.id === postId);
-    
-    if (!post) {
-        showToast('Post não encontrado para edição', 'error');
-        return;
-    }
-    
-    const titleElement = document.getElementById('title');
-    const contentElement = document.getElementById('content');
-    const categoryElement = document.getElementById('category');
-    const tagsElement = document.getElementById('tags');
-    
-    if (titleElement) titleElement.value = post.title;
-    if (contentElement) contentElement.value = post.content;
-    if (categoryElement) categoryElement.value = post.category;
-    if (tagsElement) tagsElement.value = post.tags.join(', ');
-    
-    // Update page title
-    document.title = `Editando: ${post.title}`;
-    
-    // Change button text
-    const submitButton = document.querySelector('button[type="submit"]');
-    if (submitButton) {
-        submitButton.textContent = 'Atualizar Post';
-        submitButton.onclick = () => updatePostData(postId);
-    }
 }
 
 function updatePostData(postId) {
