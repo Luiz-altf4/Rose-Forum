@@ -236,6 +236,15 @@
         </div>
     </div>
 
+    <!-- Floating Action Buttons -->
+    <button class="fab" onclick="openCreateModal()" title="Criar Novo Post">
+        ✏️
+    </button>
+    
+    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar Tema">
+        🌙
+    </button>
+
     <script src="script.js"></script>
     <script>
         // Additional client-side functionality
@@ -330,23 +339,6 @@
             showToast('Posts atualizados!', 'info');
         }
 
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            
-            toastMessage.textContent = message;
-            toast.className = `toast toast-${type}`;
-            toast.style.display = 'block';
-            
-            setTimeout(() => {
-                hideToast();
-            }, 3000);
-        }
-
-        function hideToast() {
-            document.getElementById('toast').style.display = 'none';
-        }
-
         function updateStats() {
             const posts = getAllPosts();
             const today = new Date().toDateString();
@@ -360,6 +352,13 @@
             
             const categories = [...new Set(posts.map(post => post.category))];
             document.getElementById('totalCategories').textContent = categories.length;
+        }
+
+        // Update theme button icon
+        function updateThemeIcon() {
+            const themeToggle = document.querySelector('.theme-toggle');
+            const currentTheme = document.body.getAttribute('data-theme');
+            themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
         }
 
         // Search on Enter key
@@ -379,6 +378,8 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            loadTheme();
+            updateThemeIcon();
             loadPosts();
             updateStats();
         });
