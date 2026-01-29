@@ -69,6 +69,26 @@ function getAllPosts() {
     }
 }
 
+function getAllComments() {
+    try {
+        const comments = localStorage.getItem('rose_forum_comments');
+        return comments ? JSON.parse(comments) : [];
+    } catch (error) {
+        console.error('Erro ao carregar comentários:', error);
+        return [];
+    }
+}
+
+function saveCommentsToStorage(comments) {
+    try {
+        localStorage.setItem('rose_forum_comments', JSON.stringify(comments));
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar comentários:', error);
+        return false;
+    }
+}
+
 function savePostsToStorage(posts) {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
@@ -96,10 +116,48 @@ function createPost(title, content, category = '', tags = []) {
         tags: Array.isArray(tags) ? tags : [],
         date: new Date().toISOString(),
         views: 0,
-        likes: 0
+        likes: 0,
+        upvotes: 0,
+        downvotes: 0,
+        userVote: null,
+        author: getCurrentUser().name
     };
     
     return post;
+}
+
+function createComment(postId, content, parentId = null) {
+    const comment = {
+        id: generateId(),
+        postId: postId,
+        parentId: parentId,
+        content: sanitizeHTML(content.trim()),
+        author: getCurrentUser().name,
+        date: new Date().toISOString(),
+        upvotes: 0,
+        downvotes: 0,
+        userVote: null,
+        replies: []
+    };
+    
+    return comment;
+}
+
+function getCurrentUser() {
+    const user = localStorage.getItem('rose_forum_user');
+    if (user) {
+        return JSON.parse(user);
+    }
+    
+    // Create default user
+    const defaultUser = {
+        name: `Usuário${Math.floor(Math.random() * 1000)}`,
+        avatar: null,
+        joinDate: new Date().toISOString()
+    };
+    
+    localStorage.setItem('rose_forum_user', JSON.stringify(defaultUser));
+    return defaultUser;
 }
 
 function updatePost(postId, updates) {
@@ -168,7 +226,11 @@ function displayPosts(posts = null, containerId = 'posts') {
             return;
         }
         
-        container.innerHTML = postsToShow.map((post, index) => `
+        container.innerHTML = postsToShow.map((post, index) => {
+            const score = (post.upvotes || 0) - (post.downvotes || 0);
+            const comments = getAllComments().filter(c => c.postId === post.id && !c.parentId);
+            
+            return `
             <article class="post" data-post-id="${post.id}" onclick="viewPost('${post.id}')" style="animation-delay: ${index * 0.1}s">
                 <div class="post-header">
                     <h3 class="post-title">${post.title}</h3>
@@ -181,16 +243,38 @@ function displayPosts(posts = null, containerId = 'posts') {
                     <span class="post-date" title="${new Date(post.date).toLocaleString('pt-BR')}">
                         📅 ${formatDate(post.date)}
                     </span>
+                    <span class="post-author">� ${post.author || 'Anônimo'}</span>
                     <span class="post-views">👁️ ${post.views || 0}</span>
-                    <span class="post-likes">❤️ ${post.likes || 0}</span>
                 </div>
                 ${post.tags.length > 0 ? `
                     <div class="post-tags">
                         ${post.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
                     </div>
                 ` : ''}
+                <div class="post-votes">
+                    <button class="post-vote-btn post-upvote ${post.userVote === 'up' ? 'upvoted' : ''}" 
+                            onclick="event.stopPropagation(); votePost('${post.id}', 'up')">
+                        👍
+                    </button>
+                    <span class="post-score">${score}</span>
+                    <button class="post-vote-btn post-downvote ${post.userVote === 'down' ? 'downvoted' : ''}" 
+                            onclick="event.stopPropagation(); votePost('${post.id}', 'down')">
+                        👎
+                    </button>
+                </div>
+                <div class="engagement-bar">
+                    <div class="engagement-item">
+                        💬 ${comments.length} comentários
+                    </div>
+                    <div class="engagement-item">
+                        ❤️ ${post.likes || 0} curtidas
+                    </div>
+                    <div class="engagement-item">
+                        🔗 Compartilhar
+                    </div>
+                </div>
             </article>
-        `).join('');
+        `;}).join('');
         
         // Update stats
         updateStats();
@@ -224,9 +308,46 @@ function viewPost(postId) {
     // Update modal content
     const viewer = document.getElementById('viewer');
     if (viewer) {
+        const score = (post.upvotes || 0) - (post.downvotes || 0);
+        
         document.getElementById('viewTitle').textContent = post.title;
-        document.getElementById('viewContent').textContent = post.content;
-        document.getElementById('viewDate').textContent = formatDate(post.date);
+        document.getElementById('viewContent').innerHTML = `
+            <div class="post-content">
+                <p>${post.content}</p>
+                <div class="post-votes">
+                    <button class="post-vote-btn post-upvote ${post.userVote === 'up' ? 'upvoted' : ''}" 
+                            onclick="votePost('${post.id}', 'up')">
+                        👍
+                    </button>
+                    <span class="post-score">${score}</span>
+                    <button class="post-vote-btn post-downvote ${post.userVote === 'down' ? 'downvoted' : ''}" 
+                            onclick="votePost('${post.id}', 'down')">
+                        👎
+                    </button>
+                </div>
+            </div>
+            <div class="comments-section">
+                <div class="comments-header">
+                    <h3 class="comments-title">Comentários</h3>
+                    <span class="comments-count" id="comments-count">0</span>
+                </div>
+                <div class="comment-form" id="comment-form-${postId}">
+                    <textarea class="comment-textarea" placeholder="Adicione um comentário..." 
+                              maxlength="500" oninput="updateCharCount(this, 500)"></textarea>
+                    <div class="comment-actions">
+                        <span class="comment-char-count">0/500</span>
+                        <button class="btn btn-primary" onclick="addComment('${postId}', this.parentElement.previousElementSibling.value)">
+                            Comentar
+                        </button>
+                    </div>
+                </div>
+                <div id="comments-${postId}" class="comments-container">
+                    <!-- Comments will be loaded here -->
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('viewDate').textContent = `Por ${post.author || 'Anônimo'} • ${formatDate(post.date)}`;
         document.getElementById('viewCategory').textContent = post.category;
         
         const tagsContainer = document.getElementById('viewTags');
@@ -238,6 +359,16 @@ function viewPost(postId) {
         
         viewer.style.display = 'block';
         currentPostId = postId;
+        
+        // Load comments
+        loadComments(postId);
+        
+        // Update comments count
+        const comments = getAllComments().filter(c => c.postId === postId && !c.parentId);
+        const countElement = document.getElementById('comments-count');
+        if (countElement) {
+            countElement.textContent = comments.length;
+        }
         
         // Add animation
         setTimeout(() => {
@@ -444,21 +575,244 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// Like Post Function
-function likePost(postId) {
+// Vote Functions
+function votePost(postId, voteType) {
     const posts = getAllPosts();
     const post = posts.find(p => p.id === postId);
     
-    if (post) {
-        post.likes = (post.likes || 0) + 1;
-        updatePost(postId, { likes: post.likes });
-        showToast('Post curtido! ❤️', 'success');
-        
-        // Update like button if exists
-        const likeBtn = document.querySelector(`[data-post-id="${postId}"] .post-likes`);
-        if (likeBtn) {
-            likeBtn.innerHTML = `❤️ ${post.likes}`;
+    if (!post) return;
+    
+    const currentVote = post.userVote;
+    
+    // Remove previous vote
+    if (currentVote === 'up') post.upvotes--;
+    if (currentVote === 'down') post.downvotes--;
+    
+    // Add new vote
+    if (currentVote === voteType) {
+        post.userVote = null; // Remove vote
+    } else {
+        post.userVote = voteType;
+        if (voteType === 'up') post.upvotes++;
+        if (voteType === 'down') post.downvotes++;
+    }
+    
+    updatePost(postId, { 
+        upvotes: post.upvotes, 
+        downvotes: post.downvotes, 
+        userVote: post.userVote 
+    });
+    
+    updatePostVoteButtons(postId, post.userVote);
+    showToast(voteType === 'up' ? '👍 Voto registrado!' : '👎 Voto registrado!', 'success');
+}
+
+function voteComment(commentId, voteType) {
+    const comments = getAllComments();
+    const comment = comments.find(c => c.id === commentId);
+    
+    if (!comment) return;
+    
+    const currentVote = comment.userVote;
+    
+    // Remove previous vote
+    if (currentVote === 'up') comment.upvotes--;
+    if (currentVote === 'down') comment.downvotes--;
+    
+    // Add new vote
+    if (currentVote === voteType) {
+        comment.userVote = null;
+    } else {
+        comment.userVote = voteType;
+        if (voteType === 'up') comment.upvotes++;
+        if (voteType === 'down') comment.downvotes++;
+    }
+    
+    saveCommentsToStorage(comments);
+    updateCommentVoteButtons(commentId, comment.userVote);
+    showToast('Voto no comentário registrado!', 'success');
+}
+
+function updatePostVoteButtons(postId, userVote) {
+    const upBtn = document.querySelector(`[data-post-id="${postId}"] .post-upvote`);
+    const downBtn = document.querySelector(`[data-post-id="${postId}"] .post-downvote`);
+    const score = document.querySelector(`[data-post-id="${postId}"] .post-score`);
+    
+    if (upBtn) {
+        upBtn.classList.toggle('upvoted', userVote === 'up');
+        upBtn.classList.remove('downvoted');
+    }
+    
+    if (downBtn) {
+        downBtn.classList.toggle('downvoted', userVote === 'down');
+        downBtn.classList.remove('upvoted');
+    }
+    
+    if (score) {
+        const posts = getAllPosts();
+        const post = posts.find(p => p.id === postId);
+        if (post) {
+            score.textContent = post.upvotes - post.downvotes;
         }
+    }
+}
+
+function updateCommentVoteButtons(commentId, userVote) {
+    const upBtn = document.querySelector(`[data-comment-id="${commentId}"] .comment-upvote`);
+    const downBtn = document.querySelector(`[data-comment-id="${commentId}"] .comment-downvote`);
+    const score = document.querySelector(`[data-comment-id="${commentId}"] .vote-count`);
+    
+    if (upBtn) {
+        upBtn.classList.toggle('upvoted', userVote === 'up');
+        upBtn.classList.remove('downvoted');
+    }
+    
+    if (downBtn) {
+        downBtn.classList.toggle('downvoted', userVote === 'down');
+        downBtn.classList.remove('upvoted');
+    }
+    
+    if (score) {
+        const comments = getAllComments();
+        const comment = comments.find(c => c.id === commentId);
+        if (comment) {
+            score.textContent = comment.upvotes - comment.downvotes;
+        }
+    }
+}
+
+// Comment Functions
+function addComment(postId, content, parentId = null) {
+    if (!content.trim()) {
+        showToast('Digite um comentário!', 'error');
+        return;
+    }
+    
+    const comment = createComment(postId, content, parentId);
+    const comments = getAllComments();
+    
+    if (parentId) {
+        // Add as reply
+        const parentComment = comments.find(c => c.id === parentId);
+        if (parentComment) {
+            parentComment.replies.push(comment.id);
+        }
+    }
+    
+    comments.push(comment);
+    saveCommentsToStorage(comments);
+    
+    // Clear form
+    const textarea = document.querySelector(`#comment-form-${postId} .comment-textarea`);
+    if (textarea) textarea.value = '';
+    
+    // Update character count
+    const charCount = document.querySelector(`#comment-form-${postId} .comment-char-count`);
+    if (charCount) charCount.textContent = '0/500';
+    
+    // Reload comments
+    loadComments(postId);
+    showToast('Comentário adicionado! 💬', 'success');
+}
+
+function loadComments(postId) {
+    const comments = getAllComments();
+    const postComments = comments.filter(c => c.postId === postId && !c.parentId);
+    const container = document.querySelector(`#comments-${postId}`);
+    
+    if (!container) return;
+    
+    if (postComments.length === 0) {
+        container.innerHTML = `
+            <div class="no-comments">
+                <p>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = postComments.map(comment => renderComment(comment)).join('');
+}
+
+function renderComment(comment) {
+    const replies = getAllComments().filter(c => c.parentId === comment.id);
+    const score = comment.upvotes - comment.downvotes;
+    
+    return `
+        <div class="comment" data-comment-id="${comment.id}">
+            <div class="comment-header">
+                <div class="comment-author">
+                    <div class="comment-avatar">${comment.author.charAt(0).toUpperCase()}</div>
+                    <div class="comment-info">
+                        <div class="comment-name">${comment.author}</div>
+                        <div class="comment-date">${formatDate(comment.date)}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="comment-content">${comment.content}</div>
+            <div class="comment-footer">
+                <div class="vote-buttons">
+                    <button class="vote-btn comment-upvote ${comment.userVote === 'up' ? 'upvoted' : ''}" 
+                            onclick="voteComment('${comment.id}', 'up')">
+                        👍
+                    </button>
+                    <span class="vote-count">${score}</span>
+                    <button class="vote-btn comment-downvote ${comment.userVote === 'down' ? 'downvoted' : ''}" 
+                            onclick="voteComment('${comment.id}', 'down')">
+                        👎
+                    </button>
+                </div>
+                <button class="reply-btn" onclick="showReplyForm('${comment.id}')">
+                    💬 Responder
+                </button>
+            </div>
+            
+            ${replies.length > 0 ? `
+                <div class="replies">
+                    ${replies.map(reply => renderComment(reply)).join('')}
+                </div>
+            ` : ''}
+            
+            <div id="reply-form-${comment.id}" style="display: none;" class="reply-form">
+                <textarea class="comment-textarea" placeholder="Escreva sua resposta..." 
+                          maxlength="500" oninput="updateCharCount(this, 500)"></textarea>
+                <div class="comment-actions">
+                    <span class="comment-char-count">0/500</span>
+                    <div>
+                        <button class="btn btn-sm btn-outline" onclick="hideReplyForm('${comment.id}')">
+                            Cancelar
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="addComment('${comment.postId}', this.previousElementSibling.previousElementSibling.value, '${comment.id}')">
+                            Responder
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function showReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (form) {
+        form.style.display = 'block';
+        form.querySelector('textarea').focus();
+    }
+}
+
+function hideReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (form) {
+        form.style.display = 'none';
+        form.querySelector('textarea').value = '';
+    }
+}
+
+function updateCharCount(textarea, maxLength) {
+    const currentLength = textarea.value.length;
+    const charCount = textarea.parentElement.querySelector('.comment-char-count');
+    if (charCount) {
+        charCount.textContent = `${currentLength}/${maxLength}`;
     }
 }
 
@@ -771,5 +1125,14 @@ window.RoseForum = {
     getAllPosts,
     createPost,
     updatePost,
-    deletePostById
+    deletePostById,
+    votePost,
+    voteComment,
+    addComment,
+    loadComments,
+    showReplyForm,
+    hideReplyForm,
+    updateCharCount,
+    getCurrentUser,
+    getAllComments
 };
