@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Rose Fórum - Compartilhe ideias e participe da comunidade">
+    <meta name="keywords" content="fórum, comunidade, discussão, posts">
+    <title>Rose Fórum - Comunidade Online</title>
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌹</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header class="site-header">
+            <div class="header-content">
+                <div class="brand">
+                    <h1 class="site-title">
+                        <span class="logo">🌹</span>
+                        Rose Fórum
+                    </h1>
+                    <p class="site-tagline">Uma comunidade para compartilhar ideias</p>
+                </div>
+                <nav class="header-nav">
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        <span class="btn-icon">✏️</span>
+                        Criar Post
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Search and Filter Section -->
+            <section class="search-section">
+                <div class="search-container">
+                    <div class="search-box">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            class="search-input"
+                            placeholder="Buscar posts..."
+                            aria-label="Buscar posts"
+                        >
+                        <button class="search-btn" onclick="searchPosts()" aria-label="Buscar">
+                            🔍
+                        </button>
+                    </div>
+                    <div class="filter-controls">
+                        <select id="categoryFilter" class="filter-select" onchange="filterPosts()">
+                            <option value="">Todas as Categorias</option>
+                            <option value="tecnologia">Tecnologia</option>
+                            <option value="design">Design</option>
+                            <option value="programacao">Programação</option>
+                            <option value="negocios">Negócios</option>
+                            <option value="pessoal">Pessoal</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                        <select id="sortBy" class="filter-select" onchange="sortPosts()">
+                            <option value="recentes">Mais Recentes</option>
+                            <option value="antigos">Mais Antigos</option>
+                            <option value="titulo">Por Título</option>
+                            <option value="categoria">Por Categoria</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalPosts">0</div>
+                        <div class="stat-label">Posts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCategories">0</div>
+                        <div class="stat-label">Categorias</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="todayPosts">0</div>
+                        <div class="stat-label">Hoje</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Posts Section -->
+            <section class="posts-section">
+                <div class="section-header">
+                    <h2 class="section-title">Posts Recentes</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-sm btn-outline" onclick="refreshPosts()">
+                            🔄 Atualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="posts" class="posts-grid">
+                    <!-- Posts will be dynamically loaded here -->
+                    <div class="loading-state" id="loadingPosts">
+                        <div class="loading-spinner"></div>
+                        <p>Carregando posts...</p>
+                    </div>
+                    
+                    <div class="empty-state" id="emptyPosts" style="display: none;">
+                        <div class="empty-icon">📝</div>
+                        <h3>Nenhum post encontrado</h3>
+                        <p>Seja o primeiro a compartilhar algo com a comunidade!</p>
+                        <button class="btn btn-primary" onclick="openCreateModal()">
+                            Criar Primeiro Post
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Post Viewer Modal -->
+        <div id="viewer" class="modal viewer-modal" style="display: none;">
+            <div class="modal-content viewer-content">
+                <div class="viewer-header">
+                    <h2 id="viewTitle" class="viewer-title"></h2>
+                    <button class="modal-close" onclick="closeViewer()">&times;</button>
+                </div>
+                <div class="viewer-body">
+                    <div class="post-meta">
+                        <span class="post-category" id="viewCategory"></span>
+                        <span class="post-date" id="viewDate"></span>
+                    </div>
+                    <div class="post-tags" id="viewTags"></div>
+                    <div id="viewContent" class="post-content"></div>
+                </div>
+                <div class="viewer-actions">
+                    <button class="btn btn-secondary" onclick="editPost()">
+                        ✏️ Editar
+                    </button>
+                    <button class="btn btn-danger" onclick="deletePost()">
+                        🗑️ Excluir
+                    </button>
+                    <button class="btn btn-outline" onclick="closeViewer()">
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Post Modal -->
+        <div id="createModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Criar Novo Post</h3>
+                    <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="quickCreateForm">
+                        <div class="form-group">
+                            <label for="quickTitle" class="form-label">Título</label>
+                            <input 
+                                type="text" 
+                                id="quickTitle" 
+                                class="form-input"
+                                placeholder="Digite o título..."
+                                required
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="quickContent" class="form-label">Conteúdo</label>
+                            <textarea 
+                                id="quickContent" 
+                                class="form-textarea"
+                                placeholder="Digite o conteúdo..."
+                                rows="6"
+                                required
+                            ></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="quickCategory" class="form-label">Categoria</label>
+                            <select id="quickCategory" class="form-select">
+                                <option value="">Selecione...</option>
+                                <option value="tecnologia">Tecnologia</option>
+                                <option value="design">Design</option>
+                                <option value="programacao">Programação</option>
+                                <option value="negocios">Negócios</option>
+                                <option value="pessoal">Pessoal</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" onclick="quickCreatePost()">
+                        Publicar
+                    </button>
+                    <button class="btn btn-outline" onclick="closeCreateModal()">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="site-footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Rose Fórum</h4>
+                    <p>Uma comunidade vibrante para compartilhar conhecimento e ideias.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul class="footer-links">
+                        <li><a href="#posts">Posts</a></li>
+                        <li><a href="create.html">Criar Post</a></li>
+                        <li><a href="#about">Sobre</a></li>
+                        <li><a href="#contact">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Estatísticas</h4>
+                    <div class="footer-stats">
+                        <span>📊 <span id="footerPostCount">0</span> posts</span>
+                        <span>👥 <span id="footerUserCount">1</span> usuário</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Rose Fórum. Feito com ❤️ para a comunidade.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" style="display: none;">
+        <div class="toast-content">
+            <span id="toastMessage"></span>
+            <button class="toast-close" onclick="hideToast()">&times;</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Additional client-side functionality
+        function openCreateModal() {
+            document.getElementById('createModal').style.display = 'block';
+            document.getElementById('quickTitle').focus();
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').style.display = 'none';
+            document.getElementById('quickCreateForm').reset();
+        }
+
+        function quickCreatePost() {
+            const title = document.getElementById('quickTitle').value.trim();
+            const content = document.getElementById('quickContent').value.trim();
+            const category = document.getElementById('quickCategory').value;
+
+            if (!title || !content) {
+                showToast('Preencha todos os campos obrigatórios', 'error');
+                return;
+            }
+
+            const post = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                category: category || 'outro',
+                date: new Date().toISOString(),
+                tags: []
+            };
+
+            savePostToStorage(post);
+            closeCreateModal();
+            loadPosts();
+            showToast('Post criado com sucesso!', 'success');
+        }
+
+        function closeViewer() {
+            document.getElementById('viewer').style.display = 'none';
+        }
+
+        function searchPosts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const posts = getAllPosts();
+            
+            const filtered = posts.filter(post => 
+                post.title.toLowerCase().includes(query) || 
+                post.content.toLowerCase().includes(query)
+            );
+            
+            displayPosts(filtered);
+        }
+
+        function filterPosts() {
+            const category = document.getElementById('categoryFilter').value;
+            const posts = getAllPosts();
+            
+            const filtered = category ? 
+                posts.filter(post => post.category === category) : 
+                posts;
+            
+            displayPosts(filtered);
+        }
+
+        function sortPosts() {
+            const sortBy = document.getElementById('sortBy').value;
+            const posts = getAllPosts();
+            
+            let sorted = [...posts];
+            
+            switch(sortBy) {
+                case 'recentes':
+                    sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'antigos':
+                    sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    break;
+                case 'titulo':
+                    sorted.sort((a, b) => a.title.localeCompare(b.title));
+                    break;
+                case 'categoria':
+                    sorted.sort((a, b) => a.category.localeCompare(b.category));
+                    break;
+            }
+            
+            displayPosts(sorted);
+        }
+
+        function refreshPosts() {
+            loadPosts();
+            showToast('Posts atualizados!', 'info');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.className = `toast toast-${type}`;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                hideToast();
+            }, 3000);
+        }
+
+        function hideToast() {
+            document.getElementById('toast').style.display = 'none';
+        }
+
+        function updateStats() {
+            const posts = getAllPosts();
+            const today = new Date().toDateString();
+            const todayPosts = posts.filter(post => 
+                new Date(post.date).toDateString() === today
+            );
+            
+            document.getElementById('totalPosts').textContent = posts.length;
+            document.getElementById('todayPosts').textContent = todayPosts.length;
+            document.getElementById('footerPostCount').textContent = posts.length;
+            
+            const categories = [...new Set(posts.map(post => post.category))];
+            document.getElementById('totalCategories').textContent = categories.length;
+        }
+
+        // Search on Enter key
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPosts();
+            }
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeViewer();
+                closeCreateModal();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPosts();
+            updateStats();
+        });
+    </script>
+</body>
+</html>
