@@ -1,360 +1,258 @@
-/* ===================================
-   Enhanced CSS Styles
-   =================================== */
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Crie um novo post no blog">
+    <title>Novo Post - Blog</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <nav class="breadcrumb">
+                <a href="index.html" class="breadcrumb-link">← Início</a>
+                <span class="breadcrumb-separator">/</span>
+                <span class="breadcrumb-current">Novo Post</span>
+            </nav>
+            <h1 class="page-title">Criar Novo Post</h1>
+            <p class="page-subtitle">Compartilhe suas ideias com o mundo</p>
+        </header>
 
-/* CSS Reset & Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        <main class="main-content">
+            <section class="form-section">
+                <form id="postForm" class="post-form">
+                    <div class="form-group">
+                        <label for="title" class="form-label">
+                            Título do Post
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="title" 
+                            name="title"
+                            class="form-input"
+                            placeholder="Digite um título interessante..."
+                            required
+                            maxlength="100"
+                            aria-describedby="title-help title-error"
+                        >
+                        <div id="title-help" class="form-help">
+                            Escolha um título claro e atrativo (máx. 100 caracteres)
+                        </div>
+                        <div id="title-error" class="form-error" role="alert" aria-live="polite"></div>
+                        <div class="char-count">
+                            <span id="titleCount">0</span>/100
+                        </div>
+                    </div>
 
-/* Root Variables for Consistency */
-:root {
-    --primary-bg: #0a0a0a;
-    --secondary-bg: #111;
-    --accent-bg: #191919;
-    --primary-color: #5b00ff;
-    --text-primary: white;
-    --text-secondary: #b3b3b3;
-    --border-radius-sm: 6px;
-    --border-radius-md: 8px;
-    --border-radius-lg: 10px;
-    --spacing-xs: 5px;
-    --spacing-sm: 10px;
-    --spacing-md: 15px;
-    --spacing-lg: 20px;
-    --spacing-xl: 30px;
-    --transition-fast: 0.2s ease;
-    --transition-medium: 0.3s ease;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
-}
+                    <div class="form-group">
+                        <label for="content" class="form-label">
+                            Conteúdo do Post
+                            <span class="required">*</span>
+                        </label>
+                        <textarea 
+                            id="content" 
+                            name="content"
+                            class="form-textarea"
+                            placeholder="Escreva seu conteúdo aqui..."
+                            rows="12"
+                            required
+                            maxlength="5000"
+                            aria-describedby="content-help content-error"
+                        ></textarea>
+                        <div id="content-help" class="form-help">
+                            Use formatação Markdown para estilizar seu texto (máx. 5000 caracteres)
+                        </div>
+                        <div id="content-error" class="form-error" role="alert" aria-live="polite"></div>
+                        <div class="char-count">
+                            <span id="contentCount">0</span>/5000
+                        </div>
+                    </div>
 
-/* Body Styles */
-body {
-    background: var(--primary-bg);
-    color: var(--text-primary);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: var(--spacing-lg);
-    line-height: 1.6;
-    min-height: 100vh;
-    background-image: 
-        radial-gradient(circle at 20% 50%, rgba(91, 0, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(91, 0, 255, 0.05) 0%, transparent 50%);
-}
+                    <div class="form-group">
+                        <label for="category" class="form-label">Categoria</label>
+                        <select id="category" name="category" class="form-select">
+                            <option value="">Selecione uma categoria</option>
+                            <option value="tecnologia">Tecnologia</option>
+                            <option value="design">Design</option>
+                            <option value="programacao">Programação</option>
+                            <option value="negocios">Negócios</option>
+                            <option value="pessoal">Pessoal</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
 
-/* Typography */
-h1 {
-    text-align: center;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: var(--spacing-xl);
-    background: linear-gradient(135deg, var(--text-primary), var(--primary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow: 0 0 20px rgba(91, 0, 255, 0.3);
-}
+                    <div class="form-group">
+                        <label for="tags" class="form-label">Tags</label>
+                        <input 
+                            type="text" 
+                            id="tags" 
+                            name="tags"
+                            class="form-input"
+                            placeholder="separe tags com vírgulas (ex: javascript, web, tutorial)"
+                            aria-describedby="tags-help"
+                        >
+                        <div id="tags-help" class="form-help">
+                            Adicione tags para ajudar outros a encontrar seu post
+                        </div>
+                    </div>
 
-h2, h3, h4, h5, h6 {
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-md);
-    font-weight: 600;
-}
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">Publicar Post</span>
+                            <span class="btn-loading" style="display: none;">
+                                <span class="loading"></span>
+                                Publicando...
+                            </span>
+                        </button>
+                        
+                        <button type="button" class="btn btn-secondary" onclick="saveDraft()">
+                            Salvar Rascunho
+                        </button>
+                        
+                        <a href="index.html" class="btn btn-outline">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            </section>
 
-p {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-md);
-}
+            <aside class="preview-section">
+                <div class="preview-header">
+                    <h2>Pré-visualização</h2>
+                    <button type="button" class="btn btn-sm" onclick="togglePreview()">
+                        <span id="previewToggle">Ocultar</span>
+                    </button>
+                </div>
+                <div id="preview" class="viewer">
+                    <div class="viewer-content">
+                        <h3 id="previewTitle" class="preview-title">Seu título aparecerá aqui</h3>
+                        <div id="previewContent" class="preview-content">
+                            Seu conteúdo aparecerá aqui...
+                        </div>
+                        <div id="previewMeta" class="preview-meta">
+                            <span class="preview-category"></span>
+                            <span class="preview-tags"></span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
 
-/* Enhanced Button Styles */
-.btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, var(--primary-color), #7a3fff);
-    border-radius: var(--border-radius-sm);
-    color: var(--text-primary);
-    text-decoration: none;
-    margin: var(--spacing-sm) 0;
-    font-weight: 600;
-    border: 2px solid transparent;
-    transition: all var(--transition-medium);
-    position: relative;
-    overflow: hidden;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 0.9rem;
-    box-shadow: var(--shadow-sm);
-}
+        <footer class="page-footer">
+            <div class="footer-content">
+                <p>&copy; 2024 Seu Blog. Todos os direitos reservados.</p>
+                <div class="footer-links">
+                    <a href="#">Sobre</a>
+                    <a href="#">Contato</a>
+                    <a href="#">Privacidade</a>
+                </div>
+            </div>
+        </footer>
+    </div>
 
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left var(--transition-medium);
-}
+    <!-- Modal de Sucesso -->
+    <div id="successModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Post Criado com Sucesso!</h3>
+                <button type="button" class="modal-close" onclick="closeModal('successModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Seu post foi publicado e já está disponível no blog.</p>
+            </div>
+            <div class="modal-actions">
+                <a href="index.html" class="btn">Ver Posts</a>
+                <button type="button" class="btn btn-secondary" onclick="createAnother()">Criar Outro</button>
+            </div>
+        </div>
+    </div>
 
-.btn:hover::before {
-    left: 100%;
-}
+    <script src="script.js"></script>
+    <script>
+        // Character counting
+        document.getElementById('title').addEventListener('input', function() {
+            document.getElementById('titleCount').textContent = this.value.length;
+            updatePreview();
+        });
 
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-color);
-}
+        document.getElementById('content').addEventListener('input', function() {
+            document.getElementById('contentCount').textContent = this.value.length;
+            updatePreview();
+        });
 
-.btn:active {
-    transform: translateY(0);
-    box-shadow: var(--shadow-sm);
-}
+        // Real-time preview
+        function updatePreview() {
+            const title = document.getElementById('title').value || 'Seu título aparecerá aqui';
+            const content = document.getElementById('content').value || 'Seu conteúdo aparecerá aqui...';
+            const category = document.getElementById('category').value;
+            const tags = document.getElementById('tags').value;
 
-/* Button Variants */
-.btn-secondary {
-    background: transparent;
-    border: 2px solid var(--primary-color);
-    color: var(--primary-color);
-}
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewContent').textContent = content;
+            
+            const categoryElement = document.querySelector('.preview-category');
+            categoryElement.textContent = category ? `Categoria: ${category}` : '';
+            
+            const tagsElement = document.querySelector('.preview-tags');
+            tagsElement.textContent = tags ? `Tags: ${tags}` : '';
+        }
 
-.btn-secondary:hover {
-    background: var(--primary-color);
-    color: var(--text-primary);
-}
+        function togglePreview() {
+            const preview = document.getElementById('preview');
+            const toggle = document.getElementById('previewToggle');
+            
+            if (preview.style.display === 'none') {
+                preview.style.display = 'block';
+                toggle.textContent = 'Ocultar';
+            } else {
+                preview.style.display = 'none';
+                toggle.textContent = 'Mostrar';
+            }
+        }
 
-.btn-outline {
-    background: transparent;
-    border: 1px solid var(--text-secondary);
-    color: var(--text-secondary);
-}
+        // Form validation
+        document.getElementById('postForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Clear previous errors
+            document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+            
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+            
+            let hasError = false;
+            
+            if (title.length < 3) {
+                document.getElementById('title-error').textContent = 'O título deve ter pelo menos 3 caracteres';
+                hasError = true;
+            }
+            
+            if (content.length < 10) {
+                document.getElementById('content-error').textContent = 'O conteúdo deve ter pelo menos 10 caracteres';
+                hasError = true;
+            }
+            
+            if (!hasError) {
+                savePost();
+            }
+        });
 
-.btn-outline:hover {
-    border-color: var(--text-primary);
-    color: var(--text-primary);
-}
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
 
-/* Enhanced Post Styles */
-#posts .post {
-    background: var(--secondary-bg);
-    padding: var(--spacing-md);
-    border-radius: var(--border-radius-md);
-    margin-bottom: var(--spacing-md);
-    cursor: pointer;
-    transition: all var(--transition-medium);
-    border: 1px solid transparent;
-    position: relative;
-    overflow: hidden;
-}
-
-#posts .post::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 0;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(91, 0, 255, 0.1), transparent);
-    transition: width var(--transition-medium);
-}
-
-#posts .post:hover::before {
-    width: 100%;
-}
-
-#posts .post:hover {
-    background: var(--accent-bg);
-    transform: translateX(5px);
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow-md);
-}
-
-#posts .post:active {
-    transform: translateX(3px);
-}
-
-/* Post Content Styles */
-.post-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: var(--spacing-xs);
-    color: var(--text-primary);
-}
-
-.post-excerpt {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    line-height: 1.5;
-}
-
-.post-meta {
-    display: flex;
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-sm);
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-}
-
-.post-date, .post-author {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-/* Enhanced Viewer Styles */
-.viewer {
-    background: var(--secondary-bg);
-    padding: var(--spacing-lg);
-    border-radius: var(--border-radius-lg);
-    margin-top: var(--spacing-lg);
-    border: 1px solid rgba(91, 0, 255, 0.2);
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    overflow: hidden;
-}
-
-.viewer::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(91, 0, 255, 0.05) 0%, transparent 70%);
-    animation: pulse 4s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-}
-
-.viewer-content {
-    position: relative;
-    z-index: 1;
-}
-
-/* Loading States */
-.loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid var(--text-secondary);
-    border-radius: 50%;
-    border-top-color: var(--primary-color);
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    body {
-        padding: var(--spacing-md);
-    }
-    
-    h1 {
-        font-size: 2rem;
-        margin-bottom: var(--spacing-lg);
-    }
-    
-    .btn {
-        padding: 10px 20px;
-        font-size: 0.85rem;
-    }
-    
-    #posts .post {
-        padding: var(--spacing-sm);
-    }
-    
-    .viewer {
-        padding: var(--spacing-md);
-    }
-    
-    .post-meta {
-        flex-direction: column;
-        gap: var(--spacing-xs);
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        padding: var(--spacing-sm);
-    }
-    
-    h1 {
-        font-size: 1.5rem;
-    }
-    
-    .btn {
-        display: block;
-        width: 100%;
-        text-align: center;
-    }
-}
-
-/* Utility Classes */
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.text-right { text-align: right; }
-
-.mt-0 { margin-top: 0; }
-.mt-1 { margin-top: var(--spacing-xs); }
-.mt-2 { margin-top: var(--spacing-sm); }
-.mt-3 { margin-top: var(--spacing-md); }
-.mt-4 { margin-top: var(--spacing-lg); }
-
-.mb-0 { margin-bottom: 0; }
-.mb-1 { margin-bottom: var(--spacing-xs); }
-.mb-2 { margin-bottom: var(--spacing-sm); }
-.mb-3 { margin-bottom: var(--spacing-md); }
-.mb-4 { margin-bottom: var(--spacing-lg); }
-
-.p-0 { padding: 0; }
-.p-1 { padding: var(--spacing-xs); }
-.p-2 { padding: var(--spacing-sm); }
-.p-3 { padding: var(--spacing-md); }
-.p-4 { padding: var(--spacing-lg); }
-
-/* Scrollbar Styles */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--primary-bg);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #7a3fff;
-}
-
-/* Focus States for Accessibility */
-.btn:focus,
-#posts .post:focus {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-}
-
-/* Print Styles */
-@media print {
-    body {
-        background: white;
-        color: black;
-    }
-    
-    .btn {
-        display: none;
-    }
-}
+        function createAnother() {
+            closeModal('successModal');
+            document.getElementById('postForm').reset();
+            updatePreview();
+            document.getElementById('titleCount').textContent = '0';
+            document.getElementById('contentCount').textContent = '0';
+        }
+    </script>
+</body>
+</html>
