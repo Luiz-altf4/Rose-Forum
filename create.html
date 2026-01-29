@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Crie um novo post no blog">
-    <title>Novo Post - Blog</title>
+    <meta name="description" content="Crie um novo post no Roxe">
+    <title>Novo Post - r/Roxe</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
                 <span class="breadcrumb-current">Novo Post</span>
             </nav>
             <h1 class="page-title">Criar Novo Post</h1>
-            <p class="page-subtitle">Compartilhe suas ideias com o mundo</p>
+            <p class="page-subtitle">Compartilhe suas ideias na comunidade Roxe</p>
         </header>
 
         <main class="main-content">
@@ -76,13 +76,23 @@
                     <div class="form-group">
                         <label for="category" class="form-label">Categoria</label>
                         <select id="category" name="category" class="form-select">
-                            <option value="">Selecione uma categoria</option>
-                            <option value="tecnologia">Tecnologia</option>
-                            <option value="design">Design</option>
-                            <option value="programacao">Programação</option>
-                            <option value="negocios">Negócios</option>
-                            <option value="pessoal">Pessoal</option>
-                            <option value="outro">Outro</option>
+                            <option value="">r/Roxe</option>
+                            <option value="tecnologia">r/tecnologia</option>
+                            <option value="design">r/design</option>
+                            <option value="programacao">r/programacao</option>
+                            <option value="negocios">r/negocios</option>
+                            <option value="pessoal">r/pessoal</option>
+                            <option value="jogos">r/jogos</option>
+                            <option value="noticias">r/noticias</option>
+                            <option value="memes">r/memes</option>
+                            <option value="ajuda">r/ajuda</option>
+                            <option value="debate">r/debate</option>
+                            <option value="offtopic">r/offtopic</option>
+                            <option value="arte">r/arte</option>
+                            <option value="musica">r/musica</option>
+                            <option value="filmes">r/filmes</option>
+                            <option value="livros">r/livros</option>
+                            <option value="viagens">r/viagens</option>
                         </select>
                     </div>
 
@@ -145,7 +155,7 @@
 
         <footer class="page-footer">
             <div class="footer-content">
-                <p>&copy; 2024 Seu Blog. Todos os direitos reservados.</p>
+                <p>&copy; 2024 r/Roxe. Todos os direitos reservados.</p>
                 <div class="footer-links">
                     <a href="#">Sobre</a>
                     <a href="#">Contato</a>
@@ -163,10 +173,10 @@
                 <button type="button" class="modal-close" onclick="closeModal('successModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Seu post foi publicado e já está disponível no blog.</p>
+                <p>Seu post foi publicado e já está disponível na comunidade Roxe.</p>
             </div>
             <div class="modal-actions">
-                <a href="index.html" class="btn">Ver Posts</a>
+                <a href="index.html" class="btn">Ver Comunidade</a>
                 <button type="button" class="btn btn-secondary" onclick="createAnother()">Criar Outro</button>
             </div>
         </div>
@@ -185,6 +195,9 @@
             updatePreview();
         });
 
+        document.getElementById('category').addEventListener('change', updatePreview);
+        document.getElementById('tags').addEventListener('input', updatePreview);
+
         // Real-time preview
         function updatePreview() {
             const title = document.getElementById('title').value || 'Seu título aparecerá aqui';
@@ -196,7 +209,7 @@
             document.getElementById('previewContent').textContent = content;
             
             const categoryElement = document.querySelector('.preview-category');
-            categoryElement.textContent = category ? `Categoria: ${category}` : '';
+            categoryElement.textContent = category ? `r/${category}` : 'r/Roxe';
             
             const tagsElement = document.querySelector('.preview-tags');
             tagsElement.textContent = tags ? `Tags: ${tags}` : '';
@@ -241,6 +254,24 @@
                 savePost();
             }
         });
+
+        function savePost() {
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+            const category = document.getElementById('category').value || '';
+            const tagsInput = document.getElementById('tags').value.trim();
+            
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+            
+            const post = createPost(title, content, category, tags);
+            
+            if (savePostToStorage(post)) {
+                // Show success modal
+                document.getElementById('successModal').style.display = 'flex';
+            } else {
+                alert('Erro ao salvar post. Tente novamente.');
+            }
+        }
 
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
