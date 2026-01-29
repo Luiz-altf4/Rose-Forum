@@ -3,229 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Rose Fórum - Compartilhe ideias e participe da comunidade">
-    <meta name="keywords" content="fórum, comunidade, discussão, posts">
-    <title>Rose Fórum - Comunidade Online</title>
+    <meta name="description" content="Rose Fórum - Comunidade estilo Reddit">
+    <meta name="keywords" content="fórum, comunidade, discussão, posts, reddit">
+    <title>r/RoseFórum - A Melhor Comunidade</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌹</text></svg>">
 </head>
 <body>
-    <div class="container">
-        <header class="site-header">
-            <div class="header-content">
-                <div class="brand">
-                    <h1 class="site-title">
-                        <span class="logo">🌹</span>
-                        Rose Fórum
-                    </h1>
-                    <p class="site-tagline">Uma comunidade para compartilhar ideias</p>
+    <!-- Reddit-Style Header -->
+    <header class="reddit-header">
+        <div class="reddit-nav">
+            <div class="nav-left">
+                <div class="hamburger-menu" onclick="toggleSidebar()">☰</div>
+                <div class="logo-container">
+                    <span class="logo">🌹</span>
+                    <span class="logo-text">RoseFórum</span>
                 </div>
-                <nav class="header-nav">
-                    <button class="btn btn-primary" onclick="openCreateModal()">
-                        <span class="btn-icon">✏️</span>
-                        Criar Post
-                    </button>
-                </nav>
             </div>
-        </header>
-
-        <main class="main-content">
-            <!-- Search and Filter Section -->
-            <section class="search-section">
-                <div class="search-container">
-                    <div class="search-box">
-                        <input 
-                            type="text" 
-                            id="searchInput" 
-                            class="search-input"
-                            placeholder="Buscar posts..."
-                            aria-label="Buscar posts"
-                        >
-                        <button class="search-btn" onclick="searchPosts()" aria-label="Buscar">
-                            🔍
-                        </button>
+            
+            <div class="nav-center">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search r/RoseFórum" id="redditSearch">
+                    <button onclick="searchPosts()">🔍</button>
+                </div>
+            </div>
+            
+            <div class="nav-right">
+                <div class="user-menu">
+                    <div class="user-menu-trigger" onclick="toggleUserMenu()">
+                        <div class="user-avatar-small" id="userAvatarSmall">U</div>
+                        <span id="userKarma">0 karma</span>
+                        <span>▼</span>
                     </div>
-                    <div class="filter-controls">
-                        <select id="categoryFilter" class="filter-select" onchange="filterPosts()">
-                            <option value="">Todas as Categorias</option>
-                            <option value="tecnologia">Tecnologia</option>
-                            <option value="design">Design</option>
-                            <option value="programacao">Programação</option>
-                            <option value="negocios">Negócios</option>
-                            <option value="pessoal">Pessoal</option>
-                            <option value="outro">Outro</option>
-                        </select>
-                        <select id="sortBy" class="filter-select" onchange="sortPosts()">
-                            <option value="recentes">Mais Recentes</option>
-                            <option value="antigos">Mais Antigos</option>
-                            <option value="titulo">Por Título</option>
-                            <option value="categoria">Por Categoria</option>
-                        </select>
+                    <div class="user-menu-dropdown" id="userMenuDropdown">
+                        <button class="user-menu-item" onclick="openProfile()">👤 Meu Perfil</button>
+                        <button class="user-menu-item" onclick="openSettings()">⚙️ Configurações</button>
+                        <button class="user-menu-item" onclick="toggleTheme()">🌙 Tema</button>
+                        <button class="user-menu-item" onclick="logout()">🚪 Sair</button>
                     </div>
                 </div>
-            </section>
+            </div>
+        </div>
+    </header>
 
-            <!-- Statistics Section -->
-            <section class="stats-section">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalPosts">0</div>
-                        <div class="stat-label">Posts</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="totalCategories">0</div>
-                        <div class="stat-label">Categorias</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="todayPosts">0</div>
-                        <div class="stat-label">Hoje</div>
-                    </div>
+    <!-- Main Content - Reddit Layout -->
+    <div class="reddit-layout">
+        <!-- Sidebar -->
+        <aside class="reddit-sidebar" id="sidebar">
+            <!-- Profile Card -->
+            <div class="profile-sidebar">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">U</div>
+                    <div class="profile-name" id="profileName">Carregando...</div>
+                    <div class="profile-username" id="profileUsername">@carregando</div>
                 </div>
-            </section>
-
-            <!-- Posts Section -->
-            <section class="posts-section">
-                <div class="section-header">
-                    <h2 class="section-title">Posts Recentes</h2>
-                    <div class="section-actions">
-                        <button class="btn btn-sm btn-outline" onclick="refreshPosts()">
-                            🔄 Atualizar
-                        </button>
+                
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <div class="profile-stat-value" id="userPosts">0</div>
+                        <div class="profile-stat-label">Posts</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-value" id="userComments">0</div>
+                        <div class="profile-stat-label">Comments</div>
+                    </div>
+                    <div class="profile-stat">
+                        <div class="profile-stat-value karma-display" id="userKarmaDisplay">0</div>
+                        <div class="profile-stat-label">Karma</div>
                     </div>
                 </div>
                 
-                <div id="posts" class="posts-grid">
-                    <!-- Posts will be dynamically loaded here -->
-                    <div class="loading-state" id="loadingPosts">
-                        <div class="loading-spinner"></div>
-                        <p>Carregando posts...</p>
+                <div class="profile-badges" id="userBadges">
+                    <!-- Badges will be added dynamically -->
+                </div>
+                
+                <button class="btn btn-primary" onclick="openCreateModal()" style="width: 100%;">
+                    ✏️ Criar Post
+                </button>
+            </div>
+
+            <!-- Community Card -->
+            <div class="community-card">
+                <div class="community-header">
+                    <div class="community-avatar">🌹</div>
+                    <div class="community-info">
+                        <h3>r/RoseFórum</h3>
+                        <p>Uma comunidade para compartilhar ideias</p>
+                    </div>
+                </div>
+                
+                <div class="community-stats">
+                    <span>👥 <span id="communityMembers">1</span> membros</span>
+                    <span>📊 <span id="communityPosts">0</span> posts</span>
+                </div>
+                
+                <button class="community-action" onclick="joinCommunity()">
+                    Juntar-se à Comunidade
+                </button>
+            </div>
+
+            <!-- Trending Topics -->
+            <div class="community-card">
+                <h3>🔥 Tópicos em Alta</h3>
+                <div class="trending-list" id="trendingTopics">
+                    <div class="trending-item">💬 discussão</div>
+                    <div class="trending-item">❤️ ajuda</div>
+                    <div class="trending-item">🚀 tecnologia</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="reddit-main">
+            <!-- Sort and Filter Bar -->
+            <div class="content-header">
+                <div class="sort-options">
+                    <button class="sort-btn active" onclick="sortPosts('hot')">🔥 Quente</button>
+                    <button class="sort-btn" onclick="sortPosts('new')">✨ Novo</button>
+                    <button class="sort-btn" onclick="sortPosts('top')">⬆️ Top</button>
+                    <button class="sort-btn" onclick="sortPosts('rising')">📈 Crescente</button>
+                </div>
+                
+                <div class="view-options">
+                    <select id="categoryFilter" onchange="filterPosts()">
+                        <option value="">r/RoseFórum</option>
+                        <option value="tecnologia">r/tecnologia</option>
+                        <option value="design">r/design</option>
+                        <option value="programacao">r/programacao</option>
+                        <option value="negocios">r/negocios</option>
+                        <option value="pessoal">r/pessoal</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Posts Feed -->
+            <div id="posts" class="reddit-posts-feed">
+                <div class="loading-state" id="loadingPosts">
+                    <div class="loading-spinner"></div>
+                    <p>Carregando posts...</p>
+                </div>
+                
+                <div class="empty-state" id="emptyPosts" style="display: none;">
+                    <div class="empty-icon">📝</div>
+                    <h3>Nenhum post encontrado</h3>
+                    <p>Seja o primeiro a compartilhar algo com a comunidade!</p>
+                    <button class="btn btn-primary" onclick="openCreateModal()">
+                        Criar Primeiro Post
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Post Modal -->
+    <div id="createModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Criar Novo Post</h3>
+                <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="quickCreateForm">
+                    <div class="form-group">
+                        <label for="quickTitle" class="form-label">Título</label>
+                        <input 
+                            type="text" 
+                            id="quickTitle" 
+                            class="form-input"
+                            placeholder="Digite um título interessante..."
+                            required
+                            maxlength="300"
+                        >
+                        <div class="char-count">
+                            <span id="titleCount">0</span>/300
+                        </div>
                     </div>
                     
-                    <div class="empty-state" id="emptyPosts" style="display: none;">
-                        <div class="empty-icon">📝</div>
-                        <h3>Nenhum post encontrado</h3>
-                        <p>Seja o primeiro a compartilhar algo com a comunidade!</p>
-                        <button class="btn btn-primary" onclick="openCreateModal()">
-                            Criar Primeiro Post
-                        </button>
+                    <div class="form-group">
+                        <label for="quickContent" class="form-label">Conteúdo</label>
+                        <textarea 
+                            id="quickContent" 
+                            class="form-textarea"
+                            placeholder="Digite o conteúdo do seu post..."
+                            rows="8"
+                            required
+                            maxlength="5000"
+                        ></textarea>
+                        <div class="char-count">
+                            <span id="contentCount">0</span>/5000
+                        </div>
                     </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Post Viewer Modal -->
-        <div id="viewer" class="modal viewer-modal" style="display: none;">
-            <div class="modal-content viewer-content">
-                <div class="viewer-header">
-                    <h2 id="viewTitle" class="viewer-title"></h2>
-                    <button class="modal-close" onclick="closeViewer()">&times;</button>
-                </div>
-                <div class="viewer-body">
-                    <div class="post-meta">
-                        <span class="post-category" id="viewCategory"></span>
-                        <span class="post-date" id="viewDate"></span>
+                    
+                    <div class="form-group">
+                        <label for="quickCategory" class="form-label">Comunidade</label>
+                        <select id="quickCategory" class="form-select">
+                            <option value="">r/RoseFórum</option>
+                            <option value="tecnologia">r/tecnologia</option>
+                            <option value="design">r/design</option>
+                            <option value="programacao">r/programacao</option>
+                            <option value="negocios">r/negocios</option>
+                            <option value="pessoal">r/pessoal</option>
+                        </select>
                     </div>
-                    <div class="post-tags" id="viewTags"></div>
-                    <div id="viewContent" class="post-content"></div>
-                </div>
-                <div class="viewer-actions">
-                    <button class="btn btn-secondary" onclick="editPost()">
-                        ✏️ Editar
-                    </button>
-                    <button class="btn btn-danger" onclick="deletePost()">
-                        🗑️ Excluir
-                    </button>
-                    <button class="btn btn-outline" onclick="closeViewer()">
-                        Fechar
-                    </button>
-                </div>
+                    
+                    <div class="form-group">
+                        <label for="quickTags" class="form-label">Tags</label>
+                        <input 
+                            type="text" 
+                            id="quickTags" 
+                            class="form-input"
+                            placeholder="separe tags com vírgulas (ex: javascript, web, tutorial)"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="postSpoiler"> Spoiler
+                        </label>
+                        <label>
+                            <input type="checkbox" id="postNSFW"> NSFW
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="quickCreatePost()">
+                    Publicar
+                </button>
+                <button class="btn btn-outline" onclick="closeCreateModal()">
+                    Cancelar
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- Create Post Modal -->
-        <div id="createModal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Criar Novo Post</h3>
-                    <button class="modal-close" onclick="closeCreateModal()">&times;</button>
+    <!-- Post Viewer Modal -->
+    <div id="viewer" class="modal viewer-modal" style="display: none;">
+        <div class="modal-content viewer-content">
+            <div class="viewer-header">
+                <h2 id="viewTitle" class="viewer-title"></h2>
+                <button class="modal-close" onclick="closeViewer()">&times;</button>
+            </div>
+            <div class="viewer-body">
+                <div class="post-meta">
+                    <span class="post-category" id="viewCategory"></span>
+                    <span class="post-date" id="viewDate"></span>
                 </div>
-                <div class="modal-body">
-                    <form id="quickCreateForm">
-                        <div class="form-group">
-                            <label for="quickTitle" class="form-label">Título</label>
-                            <input 
-                                type="text" 
-                                id="quickTitle" 
-                                class="form-input"
-                                placeholder="Digite o título..."
-                                required
-                            >
-                        </div>
-                        <div class="form-group">
-                            <label for="quickContent" class="form-label">Conteúdo</label>
-                            <textarea 
-                                id="quickContent" 
-                                class="form-textarea"
-                                placeholder="Digite o conteúdo..."
-                                rows="6"
-                                required
-                            ></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="quickCategory" class="form-label">Categoria</label>
-                            <select id="quickCategory" class="form-select">
-                                <option value="">Selecione...</option>
-                                <option value="tecnologia">Tecnologia</option>
-                                <option value="design">Design</option>
-                                <option value="programacao">Programação</option>
-                                <option value="negocios">Negócios</option>
-                                <option value="pessoal">Pessoal</option>
-                                <option value="outro">Outro</option>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn btn-primary" onclick="quickCreatePost()">
-                        Publicar
-                    </button>
-                    <button class="btn btn-outline" onclick="closeCreateModal()">
-                        Cancelar
-                    </button>
-                </div>
+                <div class="post-tags" id="viewTags"></div>
+                <div id="viewContent" class="post-content"></div>
+            </div>
+            <div class="viewer-actions">
+                <button class="btn btn-secondary" onclick="editPost()">
+                    ✏️ Editar
+                </button>
+                <button class="btn btn-danger" onclick="deletePost()">
+                    🗑️ Excluir
+                </button>
+                <button class="btn btn-outline" onclick="closeViewer()">
+                    Fechar
+                </button>
             </div>
         </div>
-
-        <footer class="site-footer">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h4>Rose Fórum</h4>
-                    <p>Uma comunidade vibrante para compartilhar conhecimento e ideias.</p>
-                </div>
-                <div class="footer-section">
-                    <h4>Links Rápidos</h4>
-                    <ul class="footer-links">
-                        <li><a href="#posts">Posts</a></li>
-                        <li><a href="create.html">Criar Post</a></li>
-                        <li><a href="#about">Sobre</a></li>
-                        <li><a href="#contact">Contato</a></li>
-                    </ul>
-                </div>
-                <div class="footer-section">
-                    <h4>Estatísticas</h4>
-                    <div class="footer-stats">
-                        <span>📊 <span id="footerPostCount">0</span> posts</span>
-                        <span>👥 <span id="footerUserCount">1</span> usuário</span>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2024 Rose Fórum. Feito com ❤️ para a comunidade.</p>
-            </div>
-        </footer>
     </div>
 
     <!-- Toast Notification -->
@@ -236,7 +277,7 @@
         </div>
     </div>
 
-    <!-- Floating Action Buttons -->
+    <!-- Floating Action Button -->
     <button class="fab" onclick="openCreateModal()" title="Criar Novo Post">
         ✏️
     </button>
@@ -247,132 +288,149 @@
 
     <script src="script.js"></script>
     <script>
-        // Additional client-side functionality
-        function openCreateModal() {
-            document.getElementById('createModal').style.display = 'block';
-            document.getElementById('quickTitle').focus();
+        // Reddit-style functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
         }
 
-        function closeCreateModal() {
-            document.getElementById('createModal').style.display = 'none';
-            document.getElementById('quickCreateForm').reset();
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userMenuDropdown');
+            dropdown.classList.toggle('show');
         }
 
-        function quickCreatePost() {
-            const title = document.getElementById('quickTitle').value.trim();
-            const content = document.getElementById('quickContent').value.trim();
-            const category = document.getElementById('quickCategory').value;
+        function openProfile() {
+            showToast('Perfil em desenvolvimento! 👤', 'info');
+            toggleUserMenu();
+        }
 
-            if (!title || !content) {
-                showToast('Preencha todos os campos obrigatórios', 'error');
-                return;
+        function openSettings() {
+            showToast('Configurações em desenvolvimento! ⚙️', 'info');
+            toggleUserMenu();
+        }
+
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                localStorage.removeItem('rose_forum_user');
+                location.reload();
             }
-
-            const post = {
-                id: Date.now(),
-                title: title,
-                content: content,
-                category: category || 'outro',
-                date: new Date().toISOString(),
-                tags: []
-            };
-
-            savePostToStorage(post);
-            closeCreateModal();
-            loadPosts();
-            showToast('Post criado com sucesso!', 'success');
+            toggleUserMenu();
         }
 
-        function closeViewer() {
-            document.getElementById('viewer').style.display = 'none';
+        function joinCommunity() {
+            showToast('Bem-vindo à comunidade! 🎉', 'success');
         }
 
-        function searchPosts() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+        // Update user profile display
+        function updateProfileDisplay() {
+            const user = getCurrentUser();
+            
+            // Update profile info
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileUsername').textContent = '@' + user.name.toLowerCase().replace(/\s+/g, '');
+            document.getElementById('userAvatarSmall').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('profileAvatar').textContent = user.name.charAt(0).toUpperCase();
+            
+            // Calculate user stats
+            const posts = getAllPosts().filter(p => p.author === user.name);
+            const comments = getAllComments().filter(c => c.author === user.name);
+            
+            let totalKarma = 0;
+            posts.forEach(post => {
+                totalKarma += (post.upvotes || 0) - (post.downvotes || 0);
+            });
+            comments.forEach(comment => {
+                totalKarma += (comment.upvotes || 0) - (comment.downvotes || 0);
+            });
+            
+            document.getElementById('userPosts').textContent = posts.length;
+            document.getElementById('userComments').textContent = comments.length;
+            document.getElementById('userKarmaDisplay').textContent = totalKarma;
+            document.getElementById('userKarma').textContent = totalKarma + ' karma';
+            
+            // Add badges based on karma
+            const badgesContainer = document.getElementById('userBadges');
+            badgesContainer.innerHTML = '';
+            
+            if (totalKarma >= 1000) {
+                badgesContainer.innerHTML += '<span class="badge badge-gold">🏆 Gold</span>';
+            } else if (totalKarma >= 500) {
+                badgesContainer.innerHTML += '<span class="badge badge-silver">🥈 Silver</span>';
+            } else if (totalKarma >= 100) {
+                badgesContainer.innerHTML += '<span class="badge badge-bronze">🥉 Bronze</span>';
+            }
+            
+            if (posts.length >= 10) {
+                badgesContainer.innerHTML += '<span class="badge">📝 Postador</span>';
+            }
+            
+            if (comments.length >= 20) {
+                badgesContainer.innerHTML += '<span class="badge">💬 Comentador</span>';
+            }
+        }
+
+        // Update community stats
+        function updateCommunityStats() {
             const posts = getAllPosts();
+            const users = new Set(posts.map(p => p.author));
             
-            const filtered = posts.filter(post => 
-                post.title.toLowerCase().includes(query) || 
-                post.content.toLowerCase().includes(query)
-            );
-            
-            displayPosts(filtered);
+            document.getElementById('communityMembers').textContent = users.size + 1; // +1 for current user
+            document.getElementById('communityPosts').textContent = posts.length;
         }
 
-        function filterPosts() {
-            const category = document.getElementById('categoryFilter').value;
-            const posts = getAllPosts();
-            
-            const filtered = category ? 
-                posts.filter(post => post.category === category) : 
-                posts;
-            
-            displayPosts(filtered);
-        }
+        // Character counting for create form
+        document.getElementById('quickTitle')?.addEventListener('input', function() {
+            document.getElementById('titleCount').textContent = this.value.length;
+        });
 
-        function sortPosts() {
-            const sortBy = document.getElementById('sortBy').value;
-            const posts = getAllPosts();
+        document.getElementById('quickContent')?.addEventListener('input', function() {
+            document.getElementById('contentCount').textContent = this.value.length;
+        });
+
+        // Sort posts with Reddit-style options
+        function sortPosts(sortType) {
+            // Update active button
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
             
+            const posts = getAllPosts();
             let sorted = [...posts];
             
-            switch(sortBy) {
-                case 'recentes':
+            switch(sortType) {
+                case 'hot':
+                    // Sort by score and recent activity
+                    sorted.sort((a, b) => {
+                        const scoreA = (a.upvotes || 0) - (a.downvotes || 0);
+                        const scoreB = (b.upvotes || 0) - (b.downvotes || 0);
+                        return scoreB - scoreA;
+                    });
+                    break;
+                case 'new':
                     sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
                     break;
-                case 'antigos':
-                    sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+                case 'top':
+                    // Sort by total score
+                    sorted.sort((a, b) => {
+                        const scoreA = (a.upvotes || 0) - (a.downvotes || 0);
+                        const scoreB = (b.upvotes || 0) - (b.downvotes || 0);
+                        return scoreB - scoreA;
+                    });
                     break;
-                case 'titulo':
-                    sorted.sort((a, b) => a.title.localeCompare(b.title));
-                    break;
-                case 'categoria':
-                    sorted.sort((a, b) => a.category.localeCompare(b.category));
+                case 'rising':
+                    // Sort by upvote velocity (simplified)
+                    sorted.sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0));
                     break;
             }
             
             displayPosts(sorted);
         }
 
-        function refreshPosts() {
-            loadPosts();
-            showToast('Posts atualizados!', 'info');
-        }
-
-        function updateStats() {
-            const posts = getAllPosts();
-            const today = new Date().toDateString();
-            const todayPosts = posts.filter(post => 
-                new Date(post.date).toDateString() === today
-            );
-            
-            document.getElementById('totalPosts').textContent = posts.length;
-            document.getElementById('todayPosts').textContent = todayPosts.length;
-            document.getElementById('footerPostCount').textContent = posts.length;
-            
-            const categories = [...new Set(posts.map(post => post.category))];
-            document.getElementById('totalCategories').textContent = categories.length;
-        }
-
-        // Update theme button icon
-        function updateThemeIcon() {
-            const themeToggle = document.querySelector('.theme-toggle');
-            const currentTheme = document.body.getAttribute('data-theme');
-            themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
-        }
-
-        // Search on Enter key
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchPosts();
-            }
-        });
-
-        // Close modals on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeViewer();
-                closeCreateModal();
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-menu')) {
+                document.getElementById('userMenuDropdown').classList.remove('show');
             }
         });
 
@@ -382,6 +440,8 @@
             updateThemeIcon();
             loadPosts();
             updateStats();
+            updateProfileDisplay();
+            updateCommunityStats();
         });
     </script>
 </body>
