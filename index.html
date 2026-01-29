@@ -721,6 +721,423 @@
                 }
             }
         }
+
+        // Funções dos Modais
+        function openCreateModal() {
+            const modal = document.getElementById('createModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                // Clear form
+                const quickTitle = document.getElementById('quickTitle');
+                const quickContent = document.getElementById('quickContent');
+                const quickCategory = document.getElementById('quickCategory');
+                const quickTags = document.getElementById('quickTags');
+                const titleCount = document.getElementById('titleCount');
+                const contentCount = document.getElementById('contentCount');
+                
+                if (quickTitle) quickTitle.value = '';
+                if (quickContent) quickContent.value = '';
+                if (quickCategory) quickCategory.value = '';
+                if (quickTags) quickTags.value = '';
+                if (titleCount) titleCount.textContent = '0';
+                if (contentCount) contentCount.textContent = '0';
+            }
+        }
+
+        function closeCreateModal() {
+            const modal = document.getElementById('createModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function quickCreatePost() {
+            const title = document.getElementById('quickTitle')?.value.trim();
+            const content = document.getElementById('quickContent')?.value.trim();
+            const category = document.getElementById('quickCategory')?.value || '';
+            const tagsInput = document.getElementById('quickTags')?.value.trim() || '';
+            
+            if (!title || !content) {
+                showToast('Preencha título e conteúdo', 'error');
+                return;
+            }
+            
+            const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+            
+            // Criar post
+            const post = {
+                id: Date.now().toString(),
+                title: title,
+                content: content,
+                category: category,
+                tags: tags,
+                date: new Date().toISOString(),
+                views: 0,
+                likes: 0,
+                upvotes: 0,
+                downvotes: 0,
+                userVote: null,
+                author: getCurrentUser().name
+            };
+            
+            // Salvar post
+            const posts = getAllPosts();
+            posts.unshift(post);
+            
+            try {
+                localStorage.setItem('rose_forum_posts', JSON.stringify(posts));
+                showToast('Post criado com sucesso!', 'success');
+                closeCreateModal();
+                displayPosts();
+                updateStats();
+                updateProfileDisplay();
+                updateCommunityStats();
+            } catch (error) {
+                showToast('Erro ao criar post', 'error');
+            }
+        }
+
+        function openChatModal() {
+            const modal = document.getElementById('chatModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                loadChatMessages();
+                toggleUserMenu();
+            }
+        }
+
+        function closeChatModal() {
+            const modal = document.getElementById('chatModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const user = getCurrentUser();
+            const chatMessage = {
+                id: Date.now().toString(),
+                author: user.name,
+                text: message,
+                timestamp: new Date().toISOString(),
+                isOwn: true
+            };
+            
+            // Add message to chat
+            addChatMessage(chatMessage);
+            
+            // Save to storage
+            saveChatMessage(chatMessage);
+            
+            // Clear input
+            input.value = '';
+            
+            // Simulate response after delay
+            setTimeout(() => {
+                simulateChatResponse();
+            }, 1000 + Math.random() * 2000);
+        }
+
+        function addChatMessage(message) {
+            const messagesContainer = document.getElementById('chatMessages');
+            if (!messagesContainer) return;
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `chat-message ${message.isOwn ? 'own' : 'other'}`;
+            messageElement.innerHTML = `
+                <div class="chat-author">${message.author}</div>
+                <div class="chat-text">${message.text}</div>
+                <div class="chat-time">${formatDate(message.timestamp)}</div>
+            `;
+            
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function loadChatMessages() {
+            const messages = getChatMessages();
+            const messagesContainer = document.getElementById('chatMessages');
+            if (!messagesContainer) return;
+            
+            messagesContainer.innerHTML = '';
+            
+            // Add welcome message if no messages
+            if (messages.length === 0) {
+                addChatMessage({
+                    id: Date.now().toString(),
+                    author: 'Sistema',
+                    text: 'Bem-vindo ao bate-papo do Roxe! Envie uma mensagem para começar.',
+                    timestamp: new Date().toISOString(),
+                    isOwn: false
+                });
+            } else {
+                messages.forEach(message => addChatMessage(message));
+            }
+        }
+
+        function getChatMessages() {
+            try {
+                const messages = localStorage.getItem('rox_chat_messages');
+                return messages ? JSON.parse(messages) : [];
+            } catch (error) {
+                console.error('Erro ao carregar mensagens:', error);
+                return [];
+            }
+        }
+
+        function saveChatMessage(message) {
+            try {
+                const messages = getChatMessages();
+                messages.push(message);
+                
+                // Keep only last 50 messages
+                if (messages.length > 50) {
+                    messages.splice(0, messages.length - 50);
+                }
+                
+                localStorage.setItem('rox_chat_messages', JSON.stringify(messages));
+                return true;
+            } catch (error) {
+                console.error('Erro ao salvar mensagem:', error);
+                return false;
+            }
+        }
+
+        function simulateChatResponse() {
+            const responses = [
+                'Interessante! Conte mais sobre isso.',
+                'Eu concordo com você.',
+                'Isso me faz pensar...',
+                'Boa observação!',
+                'Você tem um ponto válido.',
+                'Hmm, nunca pensei por esse ângulo.',
+                'Legal! 😊',
+                'Com certeza!',
+                'Faz sentido.',
+                'Eu gostaria de saber mais.'
+            ];
+            
+            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+            const botMessage = {
+                id: Date.now().toString(),
+                author: 'BotRoxe',
+                text: randomResponse,
+                timestamp: new Date().toISOString(),
+                isOwn: false
+            };
+            
+            addChatMessage(botMessage);
+            saveChatMessage(botMessage);
+        }
+
+        function openFriendsModal() {
+            const modal = document.getElementById('friendsModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                loadFriends();
+                loadFriendRequests();
+                toggleUserMenu();
+            }
+        }
+
+        function closeFriendsModal() {
+            const modal = document.getElementById('friendsModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function addFriend() {
+            const usernameInput = document.getElementById('friendUsername');
+            const username = usernameInput.value.trim();
+            
+            if (!username) {
+                showToast('Digite um nome de usuário', 'error');
+                return;
+            }
+            
+            if (username === getCurrentUser().name) {
+                showToast('Você não pode adicionar a si mesmo', 'error');
+                return;
+            }
+            
+            const friends = getFriends();
+            if (friends.some(f => f.username === username)) {
+                showToast('Este usuário já é seu amigo', 'error');
+                return;
+            }
+            
+            // Create friend request (simulated)
+            const request = {
+                id: Date.now().toString(),
+                from: getCurrentUser().name,
+                to: username,
+                timestamp: new Date().toISOString(),
+                status: 'pending'
+            };
+            
+            saveFriendRequest(request);
+            showToast('Solicitação de amizade enviada!', 'success');
+            usernameInput.value = '';
+            
+            // Simulate acceptance for demo
+            setTimeout(() => {
+                acceptFriendRequest(request.id);
+            }, 2000 + Math.random() * 3000);
+        }
+
+        function getFriends() {
+            try {
+                const friends = localStorage.getItem('rox_friends');
+                return friends ? JSON.parse(friends) : [];
+            } catch (error) {
+                console.error('Erro ao carregar amigos:', error);
+                return [];
+            }
+        }
+
+        function saveFriend(friend) {
+            try {
+                const friends = getFriends();
+                friends.push(friend);
+                localStorage.setItem('rox_friends', JSON.stringify(friends));
+                return true;
+            } catch (error) {
+                console.error('Erro ao salvar amigo:', error);
+                return false;
+            }
+        }
+
+        function getFriendRequests() {
+            try {
+                const requests = localStorage.getItem('rox_friend_requests');
+                return requests ? JSON.parse(requests) : [];
+            } catch (error) {
+                console.error('Erro ao carregar solicitações:', error);
+                return [];
+            }
+        }
+
+        function saveFriendRequest(request) {
+            try {
+                const requests = getFriendRequests();
+                requests.push(request);
+                localStorage.setItem('rox_friend_requests', JSON.stringify(requests));
+                return true;
+            } catch (error) {
+                console.error('Erro ao salvar solicitação:', error);
+                return false;
+            }
+        }
+
+        function acceptFriendRequest(requestId) {
+            const requests = getFriendRequests();
+            const requestIndex = requests.findIndex(r => r.id === requestId);
+            
+            if (requestIndex === -1) return;
+            
+            const request = requests[requestIndex];
+            
+            // Add to friends list
+            const friend = {
+                id: Date.now().toString(),
+                username: request.from === getCurrentUser().name ? request.to : request.from,
+                addedAt: new Date().toISOString(),
+                status: 'online'
+            };
+            
+            saveFriend(friend);
+            
+            // Remove request
+            requests.splice(requestIndex, 1);
+            localStorage.setItem('rox_friend_requests', JSON.stringify(requests));
+            
+            loadFriends();
+            loadFriendRequests();
+            showToast(`${friend.username} agora é seu amigo!`, 'success');
+        }
+
+        function loadFriends() {
+            const friends = getFriends();
+            const friendsList = document.getElementById('friendsList');
+            
+            if (!friendsList) return;
+            
+            if (friends.length === 0) {
+                friendsList.innerHTML = '<div class="empty-friends">Você ainda não tem amigos</div>';
+                return;
+            }
+            
+            friendsList.innerHTML = friends.map(friend => `
+                <div class="friend-item">
+                    <div class="friend-info">
+                        <div class="friend-avatar">${friend.username.charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div class="friend-name">${friend.username}</div>
+                            <div class="friend-status">${friend.status}</div>
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <button onclick="removeFriend('${friend.id}')">Remover</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadFriendRequests() {
+            const requests = getFriendRequests();
+            const requestsContainer = document.getElementById('friendRequests');
+            const currentUser = getCurrentUser();
+            
+            if (!requestsContainer) return;
+            
+            // Get requests for current user
+            const userRequests = requests.filter(r => r.to === currentUser.name && r.status === 'pending');
+            
+            if (userRequests.length === 0) {
+                requestsContainer.innerHTML = '<div class="empty-friends">Nenhuma solicitação pendente</div>';
+                return;
+            }
+            
+            requestsContainer.innerHTML = userRequests.map(request => `
+                <div class="friend-item">
+                    <div class="friend-info">
+                        <div class="friend-avatar">${request.from.charAt(0).toUpperCase()}</div>
+                        <div>
+                            <div class="friend-name">${request.from}</div>
+                            <div class="friend-status">Solicitou amizade</div>
+                        </div>
+                    </div>
+                    <div class="friend-actions">
+                        <button class="accept" onclick="acceptFriendRequest('${request.id}')">Aceitar</button>
+                        <button class="deny" onclick="denyFriendRequest('${request.id}')">Recusar</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeFriend(friendId) {
+            const friends = getFriends();
+            const filteredFriends = friends.filter(f => f.id !== friendId);
+            
+            localStorage.setItem('rox_friends', JSON.stringify(filteredFriends));
+            loadFriends();
+            showToast('Amigo removido', 'info');
+        }
+
+        function denyFriendRequest(requestId) {
+            const requests = getFriendRequests();
+            const filteredRequests = requests.filter(r => r.id !== requestId);
+            
+            localStorage.setItem('rox_friend_requests', JSON.stringify(filteredRequests));
+            loadFriendRequests();
+            showToast('Solicitação recusada', 'info');
+        }
     </script>
 </body>
 </html>
