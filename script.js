@@ -1338,6 +1338,36 @@ function setupEventListeners() {
     if (contentElement) contentElement.addEventListener('input', autoSaveDraft);
 }
 
+// Initialize App Function
+function initializeApp() {
+    console.log('Roxe Forum inicializando...');
+    
+    // Carregar tema
+    loadTheme();
+    updateThemeIcon();
+    
+    // Carregar posts
+    loadPosts();
+    updateStats();
+    updateProfileDisplay();
+    updateCommunityStats();
+    
+    // Mostrar posts existentes ou estado vazio
+    setTimeout(() => {
+        const posts = getAllPosts();
+        if (posts.length === 0) {
+            const emptyElement = document.getElementById('emptyPosts');
+            const loadingElement = document.getElementById('loadingPosts');
+            if (emptyElement) emptyElement.style.display = 'block';
+            if (loadingElement) loadingElement.style.display = 'none';
+        } else {
+            displayPosts(posts);
+        }
+    }, 500);
+    
+    console.log('Roxe Forum inicializado!');
+}
+
 // Legacy compatibility
 function loadPosts() {
     displayPosts();
